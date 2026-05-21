@@ -125,6 +125,38 @@ public sealed class Transaction : AggregateRoot
         return (outLeg, inLeg);
     }
 
+    /// <summary>
+    /// Edita uma receita/despesa existente. Transferência não se edita por aqui
+    /// (ela é um par de pernas — mudaria as duas). Recalcula a Direction a partir do Type.
+    /// </summary>
+    public Result EditIncomeOrExpense(
+        Guid accountId,
+        Guid categoryId,
+        TransactionType type,
+        decimal amount,
+        string currency,
+        DateOnly occurredOn,
+        string description)
+    {
+        if (Type == TransactionType.Transfer)
+            return Result.Failure(AppError.Validation("transaction.cannot_edit_transfer", "Transferências não podem ser editadas por aqui."));
+        if (type == TransactionType.Transfer)
+            return Result.Failure(AppError.Validation("transaction.use_transfer", "Use transferência para Type=Transfer."));
+        if (amount <= 0)
+            return Result.Failure(AppError.Validation("transaction.amount_positive", "Valor deve ser positivo."));
+
+        AccountId = accountId;
+        CategoryId = categoryId;
+        Type = type;
+        Direction = type == TransactionType.Income ? TransactionDirection.Inflow : TransactionDirection.Outflow;
+        Amount = amount;
+        Currency = currency;
+        OccurredOn = occurredOn;
+        Description = description?.Trim() ?? string.Empty;
+        UpdatedAtUtc = DateTime.UtcNow;
+        return Result.Success();
+    }
+
     public void SoftDelete()
     {
         IsDeleted = true;

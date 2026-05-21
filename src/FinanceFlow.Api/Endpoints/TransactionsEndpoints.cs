@@ -10,8 +10,18 @@ namespace FinanceFlow.Api.Endpoints;
 public static class TransactionsEndpoints
 {
     public sealed record CreateCategoryRequest(string Name, CategoryKind Kind, string Color = "#888888", string Icon = "tag");
+    public sealed record UpdateCategoryRequest(string Name, string Color = "#888888", string Icon = "tag");
 
     public sealed record CreateTransactionRequest(
+        Guid AccountId,
+        Guid CategoryId,
+        TransactionType Type,
+        decimal Amount,
+        DateOnly OccurredOn,
+        string Description,
+        string Currency = "BRL");
+
+    public sealed record UpdateTransactionRequest(
         Guid AccountId,
         Guid CategoryId,
         TransactionType Type,
@@ -31,6 +41,13 @@ public static class TransactionsEndpoints
             (await sender.Send(
                 new CreateCategoryCommand(DemoUser.Id, req.Name, req.Kind, req.Color, req.Icon), ct)).ToHttp());
 
+        categories.MapPut("/{id:guid}", async (Guid id, UpdateCategoryRequest req, ISender sender, CancellationToken ct) =>
+            (await sender.Send(
+                new UpdateCategoryCommand(id, DemoUser.Id, req.Name, req.Color, req.Icon), ct)).ToHttp());
+
+        categories.MapDelete("/{id:guid}", async (Guid id, ISender sender, CancellationToken ct) =>
+            (await sender.Send(new DeleteCategoryCommand(id, DemoUser.Id), ct)).ToHttp());
+
         var transactions = app.MapGroup("/api/transactions").WithTags("Transactions");
 
         transactions.MapGet("/", async (int? year, int? month, IClock clock, ISender sender, CancellationToken ct) =>
@@ -44,5 +61,13 @@ public static class TransactionsEndpoints
             (await sender.Send(new CreateTransactionCommand(
                 DemoUser.Id, req.AccountId, req.CategoryId, req.Type,
                 req.Amount, req.OccurredOn, req.Description, req.Currency), ct)).ToHttp());
+
+        transactions.MapPut("/{id:guid}", async (Guid id, UpdateTransactionRequest req, ISender sender, CancellationToken ct) =>
+            (await sender.Send(new UpdateTransactionCommand(
+                id, DemoUser.Id, req.AccountId, req.CategoryId, req.Type,
+                req.Amount, req.OccurredOn, req.Description, req.Currency), ct)).ToHttp());
+
+        transactions.MapDelete("/{id:guid}", async (Guid id, ISender sender, CancellationToken ct) =>
+            (await sender.Send(new DeleteTransactionCommand(id, DemoUser.Id), ct)).ToHttp());
     }
 }

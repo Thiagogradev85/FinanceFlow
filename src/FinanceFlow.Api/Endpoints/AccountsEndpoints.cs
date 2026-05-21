@@ -8,6 +8,7 @@ namespace FinanceFlow.Api.Endpoints;
 public static class AccountsEndpoints
 {
     public sealed record CreateAccountRequest(string Name, AccountType Type, string Currency = "BRL", decimal OpeningBalance = 0);
+    public sealed record UpdateAccountRequest(string Name, decimal OpeningBalance);
 
     public static void MapAccountsEndpoints(this IEndpointRouteBuilder app)
     {
@@ -19,5 +20,12 @@ public static class AccountsEndpoints
         group.MapPost("/", async (CreateAccountRequest req, ISender sender, CancellationToken ct) =>
             (await sender.Send(
                 new CreateAccountCommand(DemoUser.Id, req.Name, req.Type, req.Currency, req.OpeningBalance), ct)).ToHttp());
+
+        group.MapPut("/{id:guid}", async (Guid id, UpdateAccountRequest req, ISender sender, CancellationToken ct) =>
+            (await sender.Send(
+                new UpdateAccountCommand(id, DemoUser.Id, req.Name, req.OpeningBalance), ct)).ToHttp());
+
+        group.MapDelete("/{id:guid}", async (Guid id, ISender sender, CancellationToken ct) =>
+            (await sender.Send(new DeleteAccountCommand(id, DemoUser.Id), ct)).ToHttp());
     }
 }

@@ -22,6 +22,9 @@ public class Result
 
     public static Result Success() => new(true, null);
     public static Result Failure(AppError error) => new(false, error);
+
+    // Conveniência: `return AppError.NotFound(...);` num método que devolve Result.
+    public static implicit operator Result(AppError error) => Failure(error);
 }
 
 /// <summary>

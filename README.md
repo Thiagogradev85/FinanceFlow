@@ -35,10 +35,12 @@ No primeiro boot a API **aplica as migrations e semeia dados de exemplo** sozinh
 | Método | Rota | Descrição |
 |--------|------|-----------|
 | GET | `/api/dashboard?year=&month=` | Saldo total + entradas/saídas do mês |
-| GET / POST | `/api/accounts` | Listar / criar contas |
-| GET / POST | `/api/categories` | Listar / criar categorias |
-| GET / POST | `/api/transactions?year=&month=` | Listar / criar transações |
+| GET / POST / PUT / DELETE | `/api/accounts` · `/api/accounts/{id}` | CRUD de contas |
+| GET / POST / PUT / DELETE | `/api/categories` · `/api/categories/{id}` | CRUD de categorias (receita/despesa) |
+| GET / POST / PUT / DELETE | `/api/transactions?year=&month=` · `/api/transactions/{id}` | CRUD de transações |
 | GET | `/health` | Healthcheck |
+
+> No app a navegação é por **abas** embaixo: Início (saldo + últimas), Transações (toque pra editar), Categorias e Contas. Editar/excluir usa **soft delete** (arquiva, preserva histórico).
 
 Swagger: `http://localhost:5080/swagger`.
 

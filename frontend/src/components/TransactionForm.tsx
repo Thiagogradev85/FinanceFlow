@@ -1,59 +1,68 @@
-import { useState, type FormEvent, type ReactNode } from "react";
-import { X } from "lucide-react";
-import { useAccounts, useCategories, useCreateTransaction } from "../lib/hooks";
-import { CategoryKind, TransactionType } from "../lib/types";
+import { useState, type FormEvent } from "react";
+import { Trash2 } from "lucide-react";
+import {
+  useAccounts,
+  useCategories,
+  useCreateTransaction,
+  useDeleteTransaction,
+  useUpdateTransaction,
+} from "../lib/hooks";
+import { CategoryKind, TransactionType, type TransactionDto } from "../lib/types";
+import { Field, Sheet, inputCls } from "./ui";
 
-const inputCls =
-  "w-full rounded-xl bg-slate-900 px-3 py-2 text-white outline-none focus:ring-2 focus:ring-emerald-500";
-
-function Field({ label, children }: { label: string; children: ReactNode }) {
-  return (
-    <label className="mb-3 block">
-      <span className="mb-1 block text-xs text-slate-400">{label}</span>
-      {children}
-    </label>
-  );
-}
-
-export default function AddTransactionForm({ onClose }: { onClose: () => void }) {
+export default function TransactionForm({
+  editing,
+  onClose,
+}: {
+  editing: TransactionDto | null;
+  onClose: () => void;
+}) {
   const { data: accounts } = useAccounts();
   const { data: categories } = useCategories();
   const create = useCreateTransaction();
+  const update = useUpdateTransaction();
+  const remove = useDeleteTransaction();
 
-  const [type, setType] = useState<number>(TransactionType.Expense);
-  const [accountId, setAccountId] = useState("");
-  const [categoryId, setCategoryId] = useState("");
-  const [amount, setAmount] = useState("");
-  const [description, setDescription] = useState("");
-  const [occurredOn, setOccurredOn] = useState(new Date().toISOString().slice(0, 10));
+  const isEdit = editing !== null;
+
+  const [type, setType] = useState<number>(editing?.type ?? TransactionType.Expense);
+  const [accountId, setAccountId] = useState(editing?.accountId ?? "");
+  const [categoryId, setCategoryId] = useState(editing?.categoryId ?? "");
+  const [amount, setAmount] = useState(editing ? String(editing.amount) : "");
+  const [description, setDescription] = useState(editing?.description ?? "");
+  const [occurredOn, setOccurredOn] = useState(editing?.occurredOn ?? new Date().toISOString().slice(0, 10));
 
   const filteredCategories = categories?.filter((c) =>
     type === TransactionType.Income ? c.kind === CategoryKind.Income : c.kind === CategoryKind.Expense,
   );
 
+  const busy = create.isPending || update.isPending || remove.isPending;
+
   const submit = async (e: FormEvent) => {
     e.preventDefault();
-    await create.mutateAsync({
+    const payload = {
       accountId: accountId || accounts?.[0]?.id || "",
       categoryId: categoryId || filteredCategories?.[0]?.id || "",
       type,
       amount: Number(amount),
       occurredOn,
       description,
-    });
+    };
+    if (isEdit) await update.mutateAsync({ id: editing!.id, ...payload });
+    else await create.mutateAsync(payload);
+    onClose();
+  };
+
+  const onDelete = async () => {
+    if (!editing) return;
+    if (!confirm("Excluir esta transação?")) return;
+    await remove.mutateAsync(editing.id);
     onClose();
   };
 
   return (
-    <div className="fixed inset-0 z-10 flex items-end bg-black/50" onClick={onClose}>
-      <form onClick={(e) => e.stopPropagation()} onSubmit={submit} className="w-full rounded-t-3xl bg-slate-800 p-5">
-        <div className="mb-4 flex items-center justify-between">
-          <h3 className="text-lg font-semibold text-white">Nova transação</h3>
-          <button type="button" onClick={onClose} className="text-slate-400">
-            <X />
-          </button>
-        </div>
-
+    <Sheet title={isEdit ? "Editar transação" : "Nova transação"} onClose={onClose}>
+      <form onSubmit={submit}>
         <div className="mb-3 grid grid-cols-2 gap-2">
           <button
             type="button"
@@ -89,18 +98,22 @@ export default function AddTransactionForm({ onClose }: { onClose: () => void })
           </select>
         </Field>
         <Field label="Descrição">
-          <input value={description} onChange={(e) => setDescription(e.target.value)} className={inputCls} placeholder="Ex.: Mercado" />
+          <input value={description} onChange={(e) => setDescription(e.target.value)} className={inputCls} placeholder="Ex.: Salário, Mercado…" />
         </Field>
         <Field label="Data">
           <input type="date" value={occurredOn} onChange={(e) => setOccurredOn(e.target.value)} className={inputCls} />
         </Field>
 
-        {create.isError && <p className="mb-2 text-sm text-rose-400">Erro ao salvar. Confira os campos.</p>}
-
-        <button type="submit" disabled={create.isPending} className="mt-2 w-full rounded-xl bg-emerald-500 py-3 font-semibold text-slate-900 disabled:opacity-60">
-          {create.isPending ? "Salvando…" : "Salvar"}
+        <button type="submit" disabled={busy} className="mt-2 w-full rounded-xl bg-emerald-500 py-3 font-semibold text-slate-900 disabled:opacity-60">
+          {busy ? "Salvando…" : "Salvar"}
         </button>
+
+        {isEdit && (
+          <button type="button" onClick={onDelete} disabled={busy} className="mt-2 flex w-full items-center justify-center gap-2 rounded-xl bg-slate-900 py-3 font-medium text-rose-400 disabled:opacity-60">
+            <Trash2 size={18} /> Excluir
+          </button>
+        )}
       </form>
-    </div>
+    </Sheet>
   );
 }

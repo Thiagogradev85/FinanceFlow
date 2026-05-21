@@ -56,6 +56,17 @@ public sealed class Account : AggregateRoot
         UpdatedAtUtc = DateTime.UtcNow;
     }
 
+    public Result UpdateDetails(string name, decimal openingBalance)
+    {
+        if (string.IsNullOrWhiteSpace(name))
+            return AppError.Validation("account.name_required", "Nome da conta é obrigatório.");
+
+        Name = name.Trim();
+        OpeningBalance = openingBalance;
+        UpdatedAtUtc = DateTime.UtcNow;
+        return Result.Success();
+    }
+
     public void Archive()
     {
         IsArchived = true;

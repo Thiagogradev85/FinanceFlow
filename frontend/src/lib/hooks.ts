@@ -2,31 +2,21 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import api from "./api";
 import type { AccountDto, CategoryDto, DashboardDto, TransactionDto } from "./types";
 
+// ───────────────────────── Queries ─────────────────────────
 export const useDashboard = () =>
-  useQuery({
-    queryKey: ["dashboard"],
-    queryFn: async () => (await api.get<DashboardDto>("/dashboard")).data,
-  });
+  useQuery({ queryKey: ["dashboard"], queryFn: async () => (await api.get<DashboardDto>("/dashboard")).data });
 
 export const useAccounts = () =>
-  useQuery({
-    queryKey: ["accounts"],
-    queryFn: async () => (await api.get<AccountDto[]>("/accounts")).data,
-  });
+  useQuery({ queryKey: ["accounts"], queryFn: async () => (await api.get<AccountDto[]>("/accounts")).data });
 
 export const useCategories = () =>
-  useQuery({
-    queryKey: ["categories"],
-    queryFn: async () => (await api.get<CategoryDto[]>("/categories")).data,
-  });
+  useQuery({ queryKey: ["categories"], queryFn: async () => (await api.get<CategoryDto[]>("/categories")).data });
 
 export const useTransactions = () =>
-  useQuery({
-    queryKey: ["transactions"],
-    queryFn: async () => (await api.get<TransactionDto[]>("/transactions")).data,
-  });
+  useQuery({ queryKey: ["transactions"], queryFn: async () => (await api.get<TransactionDto[]>("/transactions")).data });
 
-export interface CreateTransactionInput {
+// ─────────────────────── Transações ────────────────────────
+export interface TransactionInput {
   accountId: string;
   categoryId: string;
   type: number;
@@ -36,14 +26,89 @@ export interface CreateTransactionInput {
 }
 
 export const useCreateTransaction = () => {
-  const queryClient = useQueryClient();
+  const qc = useQueryClient();
   return useMutation({
-    mutationFn: async (input: CreateTransactionInput) =>
+    mutationFn: async (input: TransactionInput) =>
       (await api.post<TransactionDto>("/transactions", { currency: "BRL", ...input })).data,
-    // Após criar, o TanStack Query revalida dashboard e lista — UI sempre fresca.
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["transactions"] });
-      queryClient.invalidateQueries({ queryKey: ["dashboard"] });
-    },
+    onSuccess: () => invalidate(qc, ["transactions", "dashboard"]),
   });
 };
+
+export const useUpdateTransaction = () => {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ id, ...input }: TransactionInput & { id: string }) =>
+      (await api.put<TransactionDto>(`/transactions/${id}`, { currency: "BRL", ...input })).data,
+    onSuccess: () => invalidate(qc, ["transactions", "dashboard"]),
+  });
+};
+
+export const useDeleteTransaction = () => {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (id: string) => api.delete(`/transactions/${id}`),
+    onSuccess: () => invalidate(qc, ["transactions", "dashboard"]),
+  });
+};
+
+// ─────────────────────── Categorias ────────────────────────
+export interface CreateCategoryInput { name: string; kind: number; color: string; icon: string }
+export interface UpdateCategoryInput { id: string; name: string; color: string; icon: string }
+
+export const useCreateCategory = () => {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (input: CreateCategoryInput) => (await api.post<CategoryDto>("/categories", input)).data,
+    onSuccess: () => invalidate(qc, ["categories", "transactions"]),
+  });
+};
+
+export const useUpdateCategory = () => {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ id, ...input }: UpdateCategoryInput) =>
+      (await api.put<CategoryDto>(`/categories/${id}`, input)).data,
+    onSuccess: () => invalidate(qc, ["categories", "transactions"]),
+  });
+};
+
+export const useDeleteCategory = () => {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (id: string) => api.delete(`/categories/${id}`),
+    onSuccess: () => invalidate(qc, ["categories", "transactions"]),
+  });
+};
+
+// ───────────────────────── Contas ──────────────────────────
+export interface CreateAccountInput { name: string; type: number; currency: string; openingBalance: number }
+export interface UpdateAccountInput { id: string; name: string; openingBalance: number }
+
+export const useCreateAccount = () => {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (input: CreateAccountInput) => (await api.post<AccountDto>("/accounts", input)).data,
+    onSuccess: () => invalidate(qc, ["accounts", "dashboard"]),
+  });
+};
+
+export const useUpdateAccount = () => {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ id, ...input }: UpdateAccountInput) =>
+      (await api.put<AccountDto>(`/accounts/${id}`, input)).data,
+    onSuccess: () => invalidate(qc, ["accounts", "dashboard"]),
+  });
+};
+
+export const useDeleteAccount = () => {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (id: string) => api.delete(`/accounts/${id}`),
+    onSuccess: () => invalidate(qc, ["accounts", "dashboard"]),
+  });
+};
+
+function invalidate(qc: ReturnType<typeof useQueryClient>, keys: string[]) {
+  keys.forEach((key) => qc.invalidateQueries({ queryKey: [key] }));
+}

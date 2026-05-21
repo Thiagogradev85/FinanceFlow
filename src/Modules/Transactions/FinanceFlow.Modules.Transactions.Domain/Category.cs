@@ -57,6 +57,17 @@ public sealed class Category : AggregateRoot
         UpdatedAtUtc = DateTime.UtcNow;
     }
 
+    public void Update(string name, string color, string icon)
+    {
+        if (string.IsNullOrWhiteSpace(name))
+            throw new ArgumentException("Nome da categoria é obrigatório.", nameof(name));
+
+        Name = name.Trim();
+        Color = color;
+        Icon = icon;
+        UpdatedAtUtc = DateTime.UtcNow;
+    }
+
     public void Archive()
     {
         IsArchived = true;
