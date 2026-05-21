@@ -1,0 +1,57 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "ensure-docker",
+      "type": "shell",
+      "command": "node scripts/ensure-docker.js",
+      "presentation": { "reveal": "silent", "panel": "shared" },
+      "problemMatcher": []
+    },
+    {
+      "label": "compose-up",
+      "type": "shell",
+      "command": "docker compose up -d",
+      "dependsOn": "ensure-docker",
+      "dependsOrder": "sequence",
+      "presentation": { "reveal": "silent", "panel": "shared" },
+      "problemMatcher": []
+    },
+    {
+      "label": "build",
+      "type": "process",
+      "command": "dotnet",
+      "args": [
+        "build",
+        "${workspaceFolder}/FinanceFlow.slnx",
+        "/property:GenerateFullPaths=true",
+        "/consoleloggerparameters:NoSummary"
+      ],
+      "dependsOn": "compose-up",
+      "dependsOrder": "sequence",
+      "problemMatcher": "$msCompile"
+    },
+    {
+      "label": "frontend-watch",
+      "type": "shell",
+      "command": "npm run dev",
+      "options": { "cwd": "${workspaceFolder}/frontend" },
+      "isBackground": true,
+      "presentation": { "reveal": "always", "panel": "dedicated" },
+      "problemMatcher": {
+        "pattern": { "regexp": "." },
+        "background": {
+          "activeOnStart": true,
+          "beginsPattern": ".",
+          "endsPattern": "(Local:|ready in)"
+        }
+      }
+    },
+    {
+      "label": "start-stack",
+      "dependsOn": ["build", "frontend-watch"],
+      "dependsOrder": "sequence",
+      "problemMatcher": []
+    }
+  ]
+}

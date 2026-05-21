@@ -1,0 +1,68 @@
+services:
+  # ── Banco (necessário desde a Fase 1) ─────────────────────────────────
+  postgres:
+    image: postgres:16-alpine
+    container_name: financeflow-postgres
+    environment:
+      POSTGRES_USER: financeflow
+      POSTGRES_PASSWORD: financeflow123
+      POSTGRES_DB: financeflow
+    ports:
+      - "5432:5432"
+    volumes:
+      - financeflow_pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U financeflow"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  pgadmin:
+    image: dpage/pgadmin4:latest
+    container_name: financeflow-pgadmin
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@financeflow.local
+      PGADMIN_DEFAULT_PASSWORD: admin123
+      PGADMIN_CONFIG_SERVER_MODE: "False"
+    ports:
+      - "5050:80"
+    depends_on:
+      - postgres
+
+  # ── Mensageria (Fase 2 — só sobe com:  docker compose --profile kafka up -d) ──
+  kafka:
+    image: confluentinc/cp-kafka:7.7.1
+    container_name: financeflow-kafka
+    profiles: ["kafka"]
+    ports:
+      - "9092:9092"
+      - "29092:29092"
+    environment:
+      KAFKA_NODE_ID: 1
+      KAFKA_PROCESS_ROLES: "broker,controller"
+      KAFKA_CONTROLLER_QUORUM_VOTERS: "1@kafka:9093"
+      KAFKA_LISTENERS: "INTERNAL://0.0.0.0:9092,CONTROLLER://0.0.0.0:9093,EXTERNAL://0.0.0.0:29092"
+      KAFKA_ADVERTISED_LISTENERS: "INTERNAL://kafka:9092,EXTERNAL://localhost:29092"
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: "INTERNAL:PLAINTEXT,CONTROLLER:PLAINTEXT,EXTERNAL:PLAINTEXT"
+      KAFKA_CONTROLLER_LISTENER_NAMES: "CONTROLLER"
+      KAFKA_INTER_BROKER_LISTENER_NAME: "INTERNAL"
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_AUTO_CREATE_TOPICS_ENABLE: "true"
+      KAFKA_LOG_RETENTION_HOURS: 720
+      CLUSTER_ID: "financeflow-kraft-cluster"
+
+  kafka-ui:
+    image: provectuslabs/kafka-ui:latest
+    container_name: financeflow-kafka-ui
+    profiles: ["kafka"]
+    ports:
+      - "8080:8080"
+    depends_on:
+      - kafka
+    environment:
+      KAFKA_CLUSTERS_0_NAME: financeflow-local
+      KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: kafka:9092
+      DYNAMIC_CONFIG_ENABLED: "true"
+
+volumes:
+  financeflow_pgdata:

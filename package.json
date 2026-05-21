@@ -1,0 +1,18 @@
+{
+  "name": "financeflow",
+  "version": "0.1.0",
+  "description": "FinanceFlow — controle de gastos e previsão financeira (monolito modular .NET + React PWA + Kafka)",
+  "private": true,
+  "scripts": {
+    "dev": "node scripts/ensure-docker.js && docker compose up -d && dotnet build && concurrently --kill-others-on-fail --prefix-colors \"cyan.bold,green.bold\" --names \"API,WEB\" \"dotnet run --no-build --project src/FinanceFlow.Api\" \"npm run dev --prefix frontend\"",
+    "dev:back": "node scripts/ensure-docker.js && docker compose up -d && dotnet run --project src/FinanceFlow.Api",
+    "dev:front": "npm run dev --prefix frontend",
+    "kafka:up": "docker compose --profile kafka up -d",
+    "kafka:down": "docker compose --profile kafka down",
+    "build:front": "npm run build --prefix frontend",
+    "test": "dotnet test"
+  },
+  "devDependencies": {
+    "concurrently": "^9.1.2"
+  }
+}

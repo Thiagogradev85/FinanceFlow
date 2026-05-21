@@ -1,0 +1,21 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/FinanceFlow.Api/FinanceFlow.Api.csproj" />
+    <Project Path="src/FinanceFlow.Messaging.Kafka/FinanceFlow.Messaging.Kafka.csproj" />
+    <Project Path="src/FinanceFlow.SharedKernel/FinanceFlow.SharedKernel.csproj" />
+  </Folder>
+  <Folder Name="/src/Modules/" />
+  <Folder Name="/src/Modules/Accounts/">
+    <Project Path="src/Modules/Accounts/FinanceFlow.Modules.Accounts.Application/FinanceFlow.Modules.Accounts.Application.csproj" />
+    <Project Path="src/Modules/Accounts/FinanceFlow.Modules.Accounts.Domain/FinanceFlow.Modules.Accounts.Domain.csproj" />
+    <Project Path="src/Modules/Accounts/FinanceFlow.Modules.Accounts.Infrastructure/FinanceFlow.Modules.Accounts.Infrastructure.csproj" />
+  </Folder>
+  <Folder Name="/src/Modules/Transactions/">
+    <Project Path="src/Modules/Transactions/FinanceFlow.Modules.Transactions.Application/FinanceFlow.Modules.Transactions.Application.csproj" />
+    <Project Path="src/Modules/Transactions/FinanceFlow.Modules.Transactions.Domain/FinanceFlow.Modules.Transactions.Domain.csproj" />
+    <Project Path="src/Modules/Transactions/FinanceFlow.Modules.Transactions.Infrastructure/FinanceFlow.Modules.Transactions.Infrastructure.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/FinanceFlow.UnitTests/FinanceFlow.UnitTests.csproj" />
+  </Folder>
+</Solution>

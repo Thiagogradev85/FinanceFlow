@@ -1,0 +1,35 @@
+# ---- .NET ----
+bin/
+obj/
+*.user
+*.suo
+.vs/
+[Dd]ebug/
+[Rr]elease/
+artifacts/
+*.nupkg
+TestResults/
+
+# ---- EF Core ----
+*.db
+*.db-shm
+*.db-wal
+
+# ---- Node / frontend ----
+node_modules/
+frontend/dist/
+dist/
+*.log
+npm-debug.log*
+
+# ---- Env / secrets ----
+.env
+.env.*
+!.env.example
+appsettings.*.local.json
+
+# ---- OS / editor ----
+.DS_Store
+Thumbs.db
+*.swp
+.idea/

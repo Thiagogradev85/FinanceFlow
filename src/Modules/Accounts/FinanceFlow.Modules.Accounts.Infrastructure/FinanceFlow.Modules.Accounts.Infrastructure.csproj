@@ -1,0 +1,20 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <ItemGroup>
+    <ProjectReference Include="..\FinanceFlow.Modules.Accounts.Application\FinanceFlow.Modules.Accounts.Application.csproj" />
+    <ProjectReference Include="..\FinanceFlow.Modules.Accounts.Domain\FinanceFlow.Modules.Accounts.Domain.csproj" />
+    <ProjectReference Include="..\..\..\FinanceFlow.SharedKernel\FinanceFlow.SharedKernel.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="10.0.8" />
+    <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="10.0.1" />
+  </ItemGroup>
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+</Project>

@@ -1,0 +1,30 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <ItemGroup>
+    <ProjectReference Include="..\Modules\Accounts\FinanceFlow.Modules.Accounts.Application\FinanceFlow.Modules.Accounts.Application.csproj" />
+    <ProjectReference Include="..\Modules\Accounts\FinanceFlow.Modules.Accounts.Infrastructure\FinanceFlow.Modules.Accounts.Infrastructure.csproj" />
+    <ProjectReference Include="..\Modules\Transactions\FinanceFlow.Modules.Transactions.Application\FinanceFlow.Modules.Transactions.Application.csproj" />
+    <ProjectReference Include="..\Modules\Transactions\FinanceFlow.Modules.Transactions.Infrastructure\FinanceFlow.Modules.Transactions.Infrastructure.csproj" />
+    <ProjectReference Include="..\FinanceFlow.Messaging.Kafka\FinanceFlow.Messaging.Kafka.csproj" />
+    <ProjectReference Include="..\FinanceFlow.SharedKernel\FinanceFlow.SharedKernel.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="FluentValidation.DependencyInjectionExtensions" Version="12.1.1" />
+    <PackageReference Include="MediatR" Version="12.4.1" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="10.0.8">
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+      <PrivateAssets>all</PrivateAssets>
+    </PackageReference>
+    <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="10.0.1" />
+    <PackageReference Include="Serilog.AspNetCore" Version="10.0.0" />
+    <PackageReference Include="Swashbuckle.AspNetCore" Version="10.1.7" />
+  </ItemGroup>
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+  </PropertyGroup>
+
+</Project>
