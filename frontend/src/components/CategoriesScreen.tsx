@@ -4,6 +4,20 @@ import { useCategories } from "../lib/hooks";
 import { CategoryKind, type CategoryDto } from "../lib/types";
 import CategoryForm from "./CategoryForm";
 
+function CategoryBadge({ item, onEdit }: { item: CategoryDto; onEdit: (c: CategoryDto) => void }) {
+  return (
+    <button
+      onClick={() => onEdit(item)}
+      className="flex items-center gap-1.5 rounded-full px-3 py-1.5 text-sm font-medium text-white active:scale-95 transition-transform"
+      style={{ backgroundColor: item.color + "33", border: `1px solid ${item.color}66` }}
+    >
+      <span className="h-2 w-2 flex-shrink-0 rounded-full" style={{ backgroundColor: item.color }} />
+      {item.name}
+      <Pencil size={11} className="text-white/50 ml-0.5" />
+    </button>
+  );
+}
+
 export default function CategoriesScreen() {
   const { data, isLoading } = useCategories();
   const [form, setForm] = useState<{ editing: CategoryDto | null; kind: number } | null>(null);
@@ -13,25 +27,15 @@ export default function CategoriesScreen() {
 
   const Group = ({ title, items, kind }: { title: string; items: CategoryDto[]; kind: number }) => (
     <section className="mb-6">
-      <div className="mb-2 flex items-center justify-between">
+      <div className="mb-3 flex items-center justify-between">
         <h2 className="text-sm font-semibold text-slate-300">{title}</h2>
         <button onClick={() => setForm({ editing: null, kind })} className="flex items-center gap-1 text-xs text-emerald-400">
           <Plus size={14} /> Adicionar
         </button>
       </div>
-      <div className="space-y-2">
+      <div className="flex flex-wrap gap-2">
         {items.map((c) => (
-          <button
-            key={c.id}
-            onClick={() => setForm({ editing: c, kind: c.kind })}
-            className="flex w-full items-center justify-between rounded-xl bg-slate-800 p-3 text-left"
-          >
-            <div className="flex items-center gap-2">
-              <span className="h-3 w-3 rounded-full" style={{ backgroundColor: c.color }} />
-              <span className="text-sm text-white">{c.name}</span>
-            </div>
-            <Pencil size={15} className="text-slate-500" />
-          </button>
+          <CategoryBadge key={c.id} item={c} onEdit={(cat) => setForm({ editing: cat, kind: cat.kind })} />
         ))}
         {items.length === 0 && <p className="text-sm text-slate-500">Nenhuma categoria.</p>}
       </div>

@@ -12,6 +12,8 @@ public static class DashboardEndpoints
         int Year,
         int Month,
         decimal TotalBalance,
+        decimal OpeningBalance,   // saldo inicial somado das contas
+        decimal TransactionsNet,  // entradas − saídas de todas as transações
         decimal MonthIncome,
         decimal MonthExpense,
         decimal MonthNet);
@@ -32,6 +34,7 @@ public static class DashboardEndpoints
             var totalBalance = opening.Value + summary.Value.AllTimeNet;
             var dto = new DashboardDto(
                 y, m, totalBalance,
+                opening.Value, summary.Value.AllTimeNet,
                 summary.Value.MonthIncome, summary.Value.MonthExpense, summary.Value.MonthNet);
 
             return Results.Ok(dto);

@@ -9,6 +9,7 @@ import {
 } from "../lib/hooks";
 import { CategoryKind, TransactionType, type TransactionDto } from "../lib/types";
 import { Field, Sheet, inputCls } from "./ui";
+import { formatBrlInput, parseBrlAmount } from "../lib/format";
 
 export default function TransactionForm({
   editing,
@@ -28,7 +29,7 @@ export default function TransactionForm({
   const [type, setType] = useState<number>(editing?.type ?? TransactionType.Expense);
   const [accountId, setAccountId] = useState(editing?.accountId ?? "");
   const [categoryId, setCategoryId] = useState(editing?.categoryId ?? "");
-  const [amount, setAmount] = useState(editing ? String(editing.amount) : "");
+  const [amount, setAmount] = useState(editing ? formatBrlInput(editing.amount) : "");
   const [description, setDescription] = useState(editing?.description ?? "");
   const [occurredOn, setOccurredOn] = useState(editing?.occurredOn ?? new Date().toISOString().slice(0, 10));
 
@@ -44,7 +45,7 @@ export default function TransactionForm({
       accountId: accountId || accounts?.[0]?.id || "",
       categoryId: categoryId || filteredCategories?.[0]?.id || "",
       type,
-      amount: Number(amount),
+      amount: parseBrlAmount(amount),
       occurredOn,
       description,
     };
@@ -81,7 +82,19 @@ export default function TransactionForm({
         </div>
 
         <Field label="Valor">
-          <input type="number" step="0.01" min="0" required value={amount} onChange={(e) => setAmount(e.target.value)} className={inputCls} placeholder="0,00" />
+          <input
+            type="text"
+            inputMode="decimal"
+            required
+            value={amount}
+            onChange={(e) => setAmount(e.target.value)}
+            onBlur={() => {
+              const n = parseBrlAmount(amount);
+              if (amount !== "" && !isNaN(n)) setAmount(formatBrlInput(n));
+            }}
+            className={inputCls}
+            placeholder="0,00"
+          />
         </Field>
         <Field label="Conta">
           <select value={accountId} onChange={(e) => setAccountId(e.target.value)} className={inputCls}>
