@@ -33,3 +33,7 @@ appsettings.*.local.json
 Thumbs.db
 *.swp
 .idea/
+
+# ---- Claude Code ----
+.claude/worktrees/
+.claude/settings.local.json
