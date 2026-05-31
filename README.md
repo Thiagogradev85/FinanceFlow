@@ -50,6 +50,77 @@ A `global.json` usa `"rollForward": "latestFeature"` — qualquer SDK .NET 10.0.
 
 ---
 
+## Comandos úteis
+
+### Subir / parar a stack
+```bash
+docker compose up -d           # sobe Postgres + pgAdmin
+docker compose stop            # pausa (mantém containers e dados)
+docker compose start           # retoma após stop
+docker compose down            # remove containers (volume preservado)
+docker compose down -v         # ⚠️ remove tudo, inclusive volume (apaga o DB)
+docker compose ps              # status dos serviços
+docker compose logs -f         # logs ao vivo (Ctrl+C sai)
+```
+
+### Rodar o app
+```bash
+npm run dev                    # tudo: ensure Docker + API + Vite (concurrently)
+npm run dev:back               # só a API
+npm run dev:front              # só o front (Vite)
+npm test                       # testes do back (xUnit)
+```
+
+> Pra parar o `npm run dev`: `Ctrl+C` no terminal — derruba API e Vite juntos.
+
+### Build / restore (.NET)
+```bash
+dotnet build FinanceFlow.slnx
+dotnet test FinanceFlow.slnx --no-build
+dotnet restore
+```
+
+### Migrations EF Core
+```bash
+dotnet ef migrations add <Nome> \
+  --project src/Modules/<Modulo>/FinanceFlow.Modules.<Modulo>.Infrastructure \
+  --startup-project src/FinanceFlow.Api \
+  --context <Modulo>DbContext \
+  --output-dir Persistence/Migrations
+```
+> ⚠️ Após criar a migration, **rebuild a solution toda** antes de rodar a API — o `add` builda antes de gravar o arquivo, e o F5/`npm run dev` espera o build atualizado.
+
+### Kafka (Fase 2)
+```bash
+npm run kafka:up               # sobe Kafka + Kafka UI
+npm run kafka:down             # para
+```
+
+### Endereços locais
+| Serviço | URL | Notas |
+|---|---|---|
+| Frontend (PWA) | http://localhost:5173 | Vite dev server |
+| API | http://localhost:5080 | Minimal API .NET |
+| Swagger | http://localhost:5080/swagger | docs da API |
+| pgAdmin | http://localhost:5050 | login: `admin@example.com` / `admin123` |
+| Kafka UI (Fase 2) | http://localhost:8080 | só com `npm run kafka:up` |
+
+### Gotchas do WSL2
+```bash
+# git push pendurado por causa do Git Credential Manager do Windows?
+# Roda 1x por máquina e o gh assume o lugar do helper:
+gh auth setup-git
+
+# Docker daemon parou?
+sudo systemctl start docker
+systemctl is-active docker     # deve responder "active"
+
+# Conferir que o docker em uso é o nativo do Linux (e não o stub do Docker Desktop):
+which docker                   # esperado: /usr/bin/docker
+```
+
+---
+
 ## Endpoints (Fase 1)
 
 | Método | Rota | Descrição |
