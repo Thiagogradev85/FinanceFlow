@@ -78,5 +78,28 @@ Veja [docs/PLANNING.md](docs/PLANNING.md) para o roadmap completo (fases e esfor
 | Frontend | React 18 + TypeScript + Vite (PWA), Tailwind, TanStack Query |
 | Testes | xUnit |
 
+## Agentes de IA
+
+O projeto tem agentes configurados para **Claude Code** e **GitHub Copilot** no VS Code.
+
+### Claude Code — `.claude/agents/`
+| Agente | Como acionar | Papel |
+|--------|-------------|-------|
+| `guardiao-financeflow` | mencionado automaticamente | Revisa convenções DDD/SharedKernel/Result — somente leitura |
+| `arquiteto` | "usa o arquiteto" / "planeja com o arquiteto" | Plano + trade-offs antes de escrever código |
+| `revisor-pr` | "revisa o PR" / "passa o revisor" | Code review: segurança, legibilidade, testes |
+
+### GitHub Copilot — `.github/agents/`
+| Agente | Como acionar | Papel |
+|--------|-------------|-------|
+| `@tutor-senior-xp` | Copilot Chat no VS Code | Tutor sênior XP Inc. — explica conceitos, checkpoint obrigatório em hands-on |
+| `@guardiao` | Copilot Chat no VS Code | Revisor de convenções genérico |
+| `@arquiteto` | Copilot Chat no VS Code | Consultor de arquitetura |
+| `@revisor-pr` | Copilot Chat no VS Code | Revisor de PR |
+
+> Instruções gerais para o Copilot em `.github/copilot-instructions.md`. Instruções automáticas por tipo de arquivo em `.github/instructions/`.
+
+---
+
 ## Status
 **Fase 1 (MVP)** funcionando: contas, categorias, transações e dashboard ponta a ponta — ainda **sem Kafka** (o `IEventBus` usa um logger; trocar por Kafka na Fase 2 é uma linha).
