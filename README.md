@@ -28,6 +28,26 @@ Outros scripts: `npm run dev:back` (só API), `npm run dev:front` (só web), `np
 
 No primeiro boot a API **aplica as migrations e semeia dados de exemplo** sozinha (2 contas, 3 categorias, 3 transações).
 
+### Opção 3 — WSL2 (Linux nativo, sem Docker Desktop)
+Ambiente "production-like": Docker Engine + .NET SDK + Node todos nativos no Ubuntu WSL2. Útil pra quem prefere stack Linux ou simula o ambiente de produção.
+
+Pré-requisitos no **Ubuntu WSL2 (24.04+)**:
+- **Docker Engine** + plugins via repo oficial: `docker-ce`, `docker-ce-cli`, `containerd.io`, `docker-buildx-plugin`, `docker-compose-plugin`
+- **.NET 10 SDK** (`dotnet-sdk-10.0`) via `packages.microsoft.com`
+- **Node 20+** (via [fnm](https://github.com/Schniz/fnm) ou nvm)
+- **`gh` CLI** autenticado (`sudo apt install gh && gh auth login`)
+
+Clone em `~/projects/` (não em `/mnt/c/...`) — ext4 nativo é ~10x mais rápido em I/O:
+
+```bash
+gh repo clone Thiagogradev85/FinanceFlow ~/projects/FinanceFlow
+cd ~/projects/FinanceFlow
+npm install && npm install --prefix frontend
+npm run dev
+```
+
+A `global.json` usa `"rollForward": "latestFeature"` — qualquer SDK .NET 10.0.X serve. As portas `:5173` (Vite) e `:5080` (API) ficam acessíveis no navegador Windows automaticamente via WSL2 port-forwarding.
+
 ---
 
 ## Endpoints (Fase 1)
