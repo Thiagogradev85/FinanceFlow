@@ -40,5 +40,9 @@ Monolito modular + DDD. Um host de API (`FinanceFlow.Api`), módulos isolados em
 - Não criar dependência de um módulo em outro.
 - Não usar MediatR ≥ 13 nem FluentAssertions ≥ 8 (licença comercial); manter MediatR 12.x.
 
+## Agentes disponíveis
+- **Claude Code (`.claude/agents/`):** `guardiao-financeflow` — revisor de convenções, somente leitura.
+- **GitHub Copilot (`.github/agents/`):** `tutor-senior-xp`, `guardiao`, `arquiteto`, `revisor-pr` — disponíveis no Copilot Chat do VS Code via `@nome-do-agente`.
+
 ## Estado atual
 Fase 1 (MVP) ponta a ponta: Accounts, Transactions, dashboard. `IEventBus` = `LoggingEventBus` (Kafka só na Fase 2). Autenticação ainda não existe — usa `DemoUser` fixo.
