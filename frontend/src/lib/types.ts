@@ -39,3 +39,14 @@ export interface DashboardDto {
 
 export const TransactionType = { Income: 1, Expense: 2, Transfer: 3 } as const;
 export const CategoryKind = { Income: 1, Expense: 2 } as const;
+
+export interface TransactionProposal {
+  accountId: string;
+  accountName: string;
+  categoryId: string;
+  categoryName: string;
+  type: number; // 1=Income, 2=Expense
+  amount: number;
+  occurredOn: string; // "YYYY-MM-DD"
+  description: string;
+}

@@ -3,17 +3,19 @@ import api from "./api";
 import type { AccountDto, CategoryDto, DashboardDto, TransactionDto } from "./types";
 
 // ───────────────────────── Queries ─────────────────────────
+const ALWAYS = { refetchOnMount: "always" as const };
+
 export const useDashboard = () =>
-  useQuery({ queryKey: ["dashboard"], queryFn: async () => (await api.get<DashboardDto>("/dashboard")).data });
+  useQuery({ queryKey: ["dashboard"], queryFn: async () => (await api.get<DashboardDto>("/dashboard")).data, ...ALWAYS });
 
 export const useAccounts = () =>
-  useQuery({ queryKey: ["accounts"], queryFn: async () => (await api.get<AccountDto[]>("/accounts")).data });
+  useQuery({ queryKey: ["accounts"], queryFn: async () => (await api.get<AccountDto[]>("/accounts")).data, ...ALWAYS });
 
 export const useCategories = () =>
-  useQuery({ queryKey: ["categories"], queryFn: async () => (await api.get<CategoryDto[]>("/categories")).data });
+  useQuery({ queryKey: ["categories"], queryFn: async () => (await api.get<CategoryDto[]>("/categories")).data, ...ALWAYS });
 
 export const useTransactions = () =>
-  useQuery({ queryKey: ["transactions"], queryFn: async () => (await api.get<TransactionDto[]>("/transactions")).data });
+  useQuery({ queryKey: ["transactions"], queryFn: async () => (await api.get<TransactionDto[]>("/transactions")).data, ...ALWAYS });
 
 // ─────────────────────── Transações ────────────────────────
 export interface TransactionInput {

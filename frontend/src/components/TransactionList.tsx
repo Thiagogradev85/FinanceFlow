@@ -9,7 +9,7 @@ export default function TransactionList({
   onSelect?: (t: TransactionDto) => void;
   limit?: number;
 }) {
-  const { data, isLoading } = useTransactions();
+  const { data, isPending, isFetching, isError } = useTransactions();
   const { data: categories } = useCategories();
 
   const categoryName = (id: string | null) => categories?.find((c) => c.id === id)?.name ?? "Transferência";
@@ -17,8 +17,10 @@ export default function TransactionList({
 
   return (
     <div className="space-y-2">
-      {isLoading && <p className="text-sm text-slate-500">Carregando…</p>}
-      {data?.length === 0 && <p className="text-sm text-slate-500">Nenhuma transação ainda.</p>}
+      {isPending && <p className="text-sm text-slate-500">Carregando…</p>}
+      {!isPending && isFetching && <p className="text-xs text-slate-500 animate-pulse">Atualizando…</p>}
+      {isError && <p className="text-sm text-rose-400">Erro ao carregar transações. Verifique se a API está rodando.</p>}
+      {!isPending && !isError && data?.length === 0 && <p className="text-sm text-slate-500">Nenhuma transação ainda.</p>}
 
       {items?.map((t) => {
         const isIncome = t.direction === 1;

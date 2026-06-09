@@ -1,10 +1,11 @@
-import { Home, Receipt, Tags, Wallet } from "lucide-react";
+import { Home, MessageCircle, Receipt, Tags, Wallet } from "lucide-react";
 
-export type Tab = "home" | "transactions" | "categories" | "accounts";
+export type Tab = "home" | "transactions" | "chat" | "categories" | "accounts";
 
 const TABS: { id: Tab; label: string; Icon: typeof Home }[] = [
   { id: "home", label: "Início", Icon: Home },
   { id: "transactions", label: "Transações", Icon: Receipt },
+  { id: "chat", label: "IA", Icon: MessageCircle },
   { id: "categories", label: "Categorias", Icon: Tags },
   { id: "accounts", label: "Contas", Icon: Wallet },
 ];
@@ -12,7 +13,7 @@ const TABS: { id: Tab; label: string; Icon: typeof Home }[] = [
 export default function BottomNav({ tab, onChange }: { tab: Tab; onChange: (t: Tab) => void }) {
   return (
     <nav className="fixed bottom-0 left-1/2 z-10 w-full max-w-md -translate-x-1/2 border-t border-slate-800 bg-slate-900/95 backdrop-blur">
-      <div className="grid grid-cols-4">
+      <div className="grid grid-cols-5">
         {TABS.map(({ id, label, Icon }) => (
           <button
             key={id}

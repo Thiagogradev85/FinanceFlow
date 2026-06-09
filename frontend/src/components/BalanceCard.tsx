@@ -9,7 +9,7 @@ function Card({ children }: { children: ReactNode }) {
 }
 
 export default function BalanceCard({ query }: { query: UseQueryResult<DashboardDto> }) {
-  if (query.isLoading) return <Card>Carregando resumo…</Card>;
+  if (query.isPending) return <Card>Carregando resumo…</Card>;
   if (query.isError || !query.data) return <Card>Não foi possível carregar o resumo.</Card>;
 
   const d = query.data;

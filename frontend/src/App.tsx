@@ -7,6 +7,7 @@ import TransactionList from "./components/TransactionList";
 import TransactionForm from "./components/TransactionForm";
 import CategoriesScreen from "./components/CategoriesScreen";
 import AccountsScreen from "./components/AccountsScreen";
+import ChatScreen from "./components/ChatScreen";
 import BottomNav, { type Tab } from "./components/BottomNav";
 
 export default function App() {
@@ -40,6 +41,7 @@ export default function App() {
         </>
       )}
 
+      {tab === "chat" && <ChatScreen />}
       {tab === "categories" && <CategoriesScreen />}
       {tab === "accounts" && <AccountsScreen />}
 
