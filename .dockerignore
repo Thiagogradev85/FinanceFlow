@@ -1,0 +1,11 @@
+**/.git
+**/.vs
+**/.vscode
+**/bin
+**/obj
+**/node_modules
+frontend/dist
+frontend/.env*.local
+**/*.user
+**/*.suo
+**/Thumbs.db

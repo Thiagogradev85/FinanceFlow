@@ -41,6 +41,16 @@ builder.Services.AddValidatorsFromAssemblies(
 builder.Services.AddSingleton<IClock, SystemClock>();
 builder.Services.AddSingleton<IEventBus, LoggingEventBus>(); // Fase 2: trocar por AddKafkaEventBus()
 
+// ── Assistente de IA (chat → proposta de lançamento) ───────────────────
+// Em produção usa Anthropic (só precisa de ANTHROPIC_API_KEY).
+// Em desenvolvimento local pode trocar por CopilotFinancialAssistant (requer CLI logado).
+builder.Services.AddSingleton(_ => new Anthropic.AnthropicClient
+{
+    ApiKey = builder.Configuration["ANTHROPIC_API_KEY"] ?? ""
+});
+builder.Services.AddScoped<FinanceFlow.Api.Common.Assistant.IFinancialAssistant,
+                           FinanceFlow.Api.Common.Assistant.ClaudeFinancialAssistant>();
+
 builder.Services.AddExceptionHandler<ValidationExceptionHandler>();
 builder.Services.AddProblemDetails();
 
@@ -48,11 +58,16 @@ builder.Services.AddProblemDetails();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-// ── CORS (o front em dev usa proxy do Vite; CORS fica de rede de segurança) ──
-const string DevCors = "dev-cors";
+// ── CORS ───────────────────────────────────────────────────────────────
+// Em produção: AllowedOrigins="https://meuapp.vercel.app" (env var no Railway).
+// Em dev: sem essa var, cai no fallback localhost.
+const string CorsPolicy = "financeflow-cors";
+var allowedOrigins = (builder.Configuration["AllowedOrigins"] ?? "http://localhost:5173")
+    .Split(",", StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+
 builder.Services.AddCors(options =>
-    options.AddPolicy(DevCors, policy =>
-        policy.WithOrigins("http://localhost:5173").AllowAnyHeader().AllowAnyMethod()));
+    options.AddPolicy(CorsPolicy, policy =>
+        policy.WithOrigins(allowedOrigins).AllowAnyHeader().AllowAnyMethod()));
 
 var app = builder.Build();
 
@@ -65,7 +80,8 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseSerilogRequestLogging();
-app.UseCors(DevCors);
+app.UseMiddleware<ApiKeyMiddleware>();
+app.UseCors(CorsPolicy);
 
 // Aplica migrations e semeia dados de demonstração no boot.
 await app.UseDatabaseStartupAsync();
@@ -76,5 +92,6 @@ app.MapGet("/health", () => Results.Ok(new { status = "ok" })).WithTags("Health"
 app.MapAccountsEndpoints();
 app.MapTransactionsEndpoints();
 app.MapDashboardEndpoints();
+app.MapAssistantEndpoints();
 
 app.Run();
