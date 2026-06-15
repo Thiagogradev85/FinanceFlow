@@ -2,8 +2,15 @@
 
 Guia operacional para a IA e para o dev. Curto de propósito. Detalhes do plano em [docs/PLANNING.md](docs/PLANNING.md).
 
+## Fluxo de sessão (obrigatório)
+A doc rica vive no **vault Obsidian** deste projeto: `C:\Users\thiag\Documents\Obsidian Vault\FinanceFlow` (no WSL: `/mnt/c/Users/thiag/Documents/Obsidian Vault/FinanceFlow`). Em divergência entre código e vault, **o vault vence**.
+
+- **No início de toda sessão**, antes de agir: ler este `CLAUDE.md` (já vem no contexto) **e** o vault — no mínimo `05 - Progresso/Estado Atual.md`, `06 - Próximos Passos/Próximos Passos.md`, `04 - Decisões/Decisões Estratégicas.md` — para retomar de onde paramos. Ler o que mais for necessário (decisões/arquitetura relacionadas à tarefa).
+- **Ao concluir uma mudança importante**, proativamente e sem esperar o fim da sessão, manter sincronizados: o **vault** (`Estado Atual` → "Sessões recentes"; `Próximos Passos`; e `Decisões Estratégicas` se houve decisão), o **README**/docs quando o que mudou afeta o leitor, e **sugerir um commit** (mensagem pronta) — esperando a aprovação do Thiago (sim/não) antes de commitar.
+- Datas no vault: usar a data real (absoluta), nunca relativa.
+
 ## O que é
-Controle de gastos + previsão financeira. Mobile-first PWA. Stack de aprendizado: .NET 10 + React/TS + Kafka, data-driven. Roda 100% local.
+Controle de gastos + previsão financeira. Mobile-first PWA. Stack de aprendizado: .NET 10 + React/TS + Kafka, data-driven. Dev local (Docker); produção em nuvem (Render + Neon + Vercel).
 
 ## Sobre o desenvolvedor
 Thiago — vindo de Node/React, aprendendo C#/.NET **construindo**. Júnior em .NET; Kafka/microsserviços são novos. Quer entender o **porquê**, não só o como. Responder em pt-BR.
