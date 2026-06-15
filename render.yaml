@@ -18,7 +18,8 @@ services:
         sync: false
       - key: ANTHROPIC_API_KEY             # chave da Anthropic (rotacionar a antiga!)
         sync: false
-      - key: AllowedOrigins                # URL do front no Vercel, ex: https://financeflow.vercel.app
-        sync: false
-      - key: API_KEY                       # senha forte; o front manda em X-Api-Key
+      # API_KEY: usada em RUNTIME pelo ApiKeyMiddleware (.NET) E em BUILD-TIME pelo
+      # frontend — o Render passa env vars como build-arg, e o Dockerfile injeta em
+      # VITE_API_KEY. O front (mesma origem) manda esse valor no header X-Api-Key.
+      - key: API_KEY
         generateValue: true                # o Render gera um valor aleatório forte automaticamente

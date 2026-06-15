@@ -2,7 +2,7 @@
 
 App de **controle de gastos e previsão financeira**, mobile-first (PWA instalável), construído como projeto de aprendizado do stack **.NET + React + Kafka, data-driven**.
 
-> Monolito modular em **.NET 10** (DDD por módulos), frontend **React + TypeScript (Vite, PWA)**, **PostgreSQL** e **Kafka** (Fase 2). Dev local via Docker; produção em nuvem (Render + Neon + Vercel).
+> Monolito modular em **.NET 10** (DDD por módulos), frontend **React + TypeScript (Vite, PWA)**, **PostgreSQL** e **Kafka** (Fase 2). Dev local via Docker; produção em nuvem (serviço único no Render + Neon).
 
 ---
 
@@ -121,19 +121,18 @@ which docker                   # esperado: /usr/bin/docker
 
 ---
 
-## Deploy em nuvem (Render + Neon + Vercel)
+## Deploy em nuvem (Render + Neon)
 
-Stack de produção: **Render** (API via Docker, blueprint `render.yaml`) · **Neon** (Postgres serverless) · **Vercel** (frontend PWA). Passo a passo completo em [docs/PLANNING.md](docs/PLANNING.md).
+Stack de produção: **Render** (serviço único via Docker, blueprint `render.yaml`) · **Neon** (Postgres serverless). **Uma URL só** serve a API **e** o frontend: o `Dockerfile` builda o React e copia o `dist/` pro `wwwroot`, e a API .NET serve os estáticos (`UseStaticFiles` + `MapFallbackToFile`). Como UI e API ficam na **mesma origem**, não há CORS nem segundo deploy.
 
-**Variáveis de ambiente da API (no Render):**
+**Variáveis de ambiente (no Render):**
 | Variável | Valor |
 |---|---|
 | `ConnectionStrings__Postgres` | connection string do Neon (ver nota abaixo) |
 | `ANTHROPIC_API_KEY` | chave da Anthropic (assistente IA usa `ClaudeFinancialAssistant` em prod) |
-| `AllowedOrigins` | URL do front no Vercel (ex.: `https://financeflow.vercel.app`) — CORS |
-| `API_KEY` | senha forte; o front envia em `X-Api-Key` |
+| `API_KEY` | senha forte. Em runtime o `ApiKeyMiddleware` exige ela em `X-Api-Key` nas rotas `/api/*`; em build-time o Render a passa como build-arg e o Dockerfile a injeta em `VITE_API_KEY` (o front manda no header). |
 
-**Variáveis do frontend (no Vercel):** `VITE_API_URL` (URL da API no Render) e `VITE_API_KEY` (mesmo valor de `API_KEY`).
+> ⚠️ O `VITE_API_KEY` fica embutido no bundle JS (baixável pelo navegador) — é **proteção mínima** contra bots, não contra um humano. Autenticação real (JWT) é a Fase 1.5.
 
 > **Connection string — aceita os dois formatos.** Provedores de nuvem (Neon, Heroku…) entregam a string no formato **URI** (`postgresql://user:pass@host/db?sslmode=require`), mas o Npgsql só entende o formato **key-value** (`Host=...;Database=...;Username=...`). O [`PostgresConnectionString.Normalize`](src/FinanceFlow.Api/Common/PostgresConnectionString.cs) detecta a URI e converte automaticamente no boot — então **cole a string do Neon como ela vem**, sem tradução manual. Strings key-value (dev local) passam intactas.
 

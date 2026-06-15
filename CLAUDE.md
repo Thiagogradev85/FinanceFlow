@@ -10,7 +10,7 @@ A doc rica vive no **vault Obsidian** deste projeto: `C:\Users\thiag\Documents\O
 - Datas no vault: usar a data real (absoluta), nunca relativa.
 
 ## O que é
-Controle de gastos + previsão financeira. Mobile-first PWA. Stack de aprendizado: .NET 10 + React/TS + Kafka, data-driven. Dev local (Docker); produção em nuvem (Render + Neon + Vercel).
+Controle de gastos + previsão financeira. Mobile-first PWA. Stack de aprendizado: .NET 10 + React/TS + Kafka, data-driven. Dev local (Docker); produção em nuvem (serviço único no Render: API + front estático, + Neon).
 
 ## Sobre o desenvolvedor
 Thiago — vindo de Node/React, aprendendo C#/.NET **construindo**. Júnior em .NET; Kafka/microsserviços são novos. Quer entender o **porquê**, não só o como. Responder em pt-BR.

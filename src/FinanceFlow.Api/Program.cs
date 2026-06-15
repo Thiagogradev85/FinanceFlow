@@ -82,6 +82,11 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseSerilogRequestLogging();
+
+// Frontend estático: em produção o build do React mora em wwwroot e é servido
+// pela própria API (mesma origem → sem CORS). Em dev não há wwwroot (o Vite serve).
+app.UseStaticFiles();
+
 app.UseMiddleware<ApiKeyMiddleware>();
 app.UseCors(CorsPolicy);
 
@@ -89,11 +94,18 @@ app.UseCors(CorsPolicy);
 await app.UseDatabaseStartupAsync();
 
 // ── Endpoints ──────────────────────────────────────────────────────────
-app.MapGet("/", () => Results.Redirect("/swagger"));
+// Em dev a raiz redireciona pro Swagger; em produção a raiz é o SPA (fallback abaixo).
+if (app.Environment.IsDevelopment())
+    app.MapGet("/", () => Results.Redirect("/swagger"));
+
 app.MapGet("/health", () => Results.Ok(new { status = "ok" })).WithTags("Health");
 app.MapAccountsEndpoints();
 app.MapTransactionsEndpoints();
 app.MapDashboardEndpoints();
 app.MapAssistantEndpoints();
+
+// SPA fallback: rota que não é /api nem arquivo estático → devolve index.html
+// (deixa o roteamento client-side do React funcionar em refresh/deep-link).
+app.MapFallbackToFile("index.html");
 
 app.Run();

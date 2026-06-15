@@ -20,8 +20,9 @@ public sealed class ApiKeyMiddleware(RequestDelegate next, IConfiguration config
             return;
         }
 
-        // /health não exige autenticação (health check do Render)
-        if (ctx.Request.Path.StartsWithSegments("/health"))
+        // Só a API exige chave. UI estática (/, /assets/*, manifest, sw.js), o SPA
+        // fallback e o /health passam livres — senão o navegador nem carregaria a página.
+        if (!ctx.Request.Path.StartsWithSegments("/api"))
         {
             await next(ctx);
             return;

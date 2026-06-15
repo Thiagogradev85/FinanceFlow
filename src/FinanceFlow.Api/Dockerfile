@@ -1,4 +1,21 @@
-# ── Stage 1: build ──────────────────────────────────────────────────────
+# ── Stage 0: build do frontend (Node) ───────────────────────────────────
+# Builda o React/Vite e gera os estáticos em /app/frontend/dist.
+FROM node:22-alpine AS frontend
+WORKDIR /app/frontend
+
+# Copia manifests primeiro p/ cache de layer (npm ci só re-roda se eles mudarem)
+COPY frontend/package.json frontend/package-lock.json ./
+RUN npm ci
+
+COPY frontend/ ./
+# A API_KEY (env var do Render) chega como build-arg e vira VITE_API_KEY, embutida
+# no bundle (é o X-Api-Key que o navegador manda). VITE_API_URL fica VAZIO de
+# propósito → o front chama "/api" (mesma origem da própria API que o serve).
+ARG API_KEY=""
+ENV VITE_API_KEY=$API_KEY
+RUN npm run build
+
+# ── Stage 1: build do backend ───────────────────────────────────────────
 FROM mcr.microsoft.com/dotnet/sdk:10.0 AS build
 WORKDIR /src
 
@@ -31,6 +48,8 @@ WORKDIR /app
 ENV ASPNETCORE_ENVIRONMENT=Production
 
 COPY --from=build /app/publish .
+# Estáticos do React vão pro wwwroot → a API serve a UI (UseStaticFiles).
+COPY --from=frontend /app/frontend/dist ./wwwroot
 
 # Render/Railway injetam a porta via $PORT em RUNTIME. Por isso usamos a forma shell
 # do ENTRYPOINT e --urls: a variável só é resolvida quando o container sobe (não no build).
