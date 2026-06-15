@@ -19,6 +19,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\src\FinanceFlow.Api\FinanceFlow.Api.csproj" />
     <ProjectReference Include="..\..\src\Modules\Accounts\FinanceFlow.Modules.Accounts.Domain\FinanceFlow.Modules.Accounts.Domain.csproj" />
     <ProjectReference Include="..\..\src\Modules\Accounts\FinanceFlow.Modules.Accounts.Application\FinanceFlow.Modules.Accounts.Application.csproj" />
     <ProjectReference Include="..\..\src\Modules\Transactions\FinanceFlow.Modules.Transactions.Domain\FinanceFlow.Modules.Transactions.Domain.csproj" />
