@@ -9,7 +9,7 @@ App de controle de gastos da vida + previsão de meses futuros + projeção de i
 - **Kafka** para o fluxo data-driven, mas só na Fase 2. Na Fase 1 o `IEventBus` (no SharedKernel) usa um `LoggingEventBus`; trocar por `AddKafkaEventBus()` não toca o domínio.
 - **PostgreSQL**: local via Docker (dev) → **Neon** (produção, serverless PostgreSQL).
 - **Frontend React + TypeScript** (PWA), seguindo as convenções do vault Micro-CRM (Mobile First, TanStack Query, Tailwind).
-- **Deploy em nuvem** (decisão 2026-06-09): Railway (API) + Neon (DB) + Vercel (frontend) — objetivo de acessar pelo celular. Railway escolhido sobre Render pelo free tier sem cold start.
+- **Deploy em nuvem** (decisão 2026-06-09, revisada 2026-06-15): Render (API via Docker) + Neon (DB) + Vercel (frontend) — objetivo de acessar pelo celular. Render escolhido por blueprint (`render.yaml` = infra como código) e deploy Docker direto; free tier hiberna (~30s de cold start), aceitável p/ uso pessoal.
 
 ## Modelo de domínio
 - **Account** (módulo Accounts): conta onde o dinheiro mora; guarda saldo de abertura. Saldo atual = abertura + (entradas − saídas).
@@ -35,12 +35,12 @@ MVP ~2 meses · com previsão ~6–7 meses · tudo ~10–12 meses. A 20h/semana,
 
 ### Deploy em nuvem — branch `feat/cloud-deploy` (em andamento)
 
-> Objetivo: acessar o app pelo celular. Stack: Railway + Neon + Vercel.
+> Objetivo: acessar o app pelo celular. Stack: Render + Neon + Vercel.
 
 | Prioridade | Entrega | Status |
 |---|---|---|
 | ✅ | Dockerfile multi-stage .NET 10 | feito |
-| ✅ | `railway.toml` + `.dockerignore` | feito |
+| ✅ | `render.yaml` (blueprint) + `.dockerignore` | feito |
 | ✅ | `appsettings.Production.json` | feito |
 | ✅ | CORS dinâmico via `AllowedOrigins` env var | feito |
 | ✅ | `ApiKeyMiddleware` (proteção mínima) | feito |
@@ -48,19 +48,19 @@ MVP ~2 meses · com previsão ~6–7 meses · tudo ~10–12 meses. A 20h/semana,
 | ✅ | Frontend `api.ts` com `VITE_API_URL` + `.env.example` | feito |
 | ✅ | Assistente IA via chat (`ChatScreen`, `AssistantEndpoints`) | feito |
 | 🔴 | Criar conta Neon → copiar connection string | **pendente (Thiago)** |
-| 🔴 | Criar projeto Railway → conectar GitHub → setar env vars | **pendente (Thiago)** |
+| 🔴 | Criar projeto Render (Blueprint via `render.yaml`) → conectar GitHub → setar env vars | **pendente (Thiago)** |
 | 🔴 | Rodar migrations contra Neon | **pendente (Thiago)** |
 | 🔴 | Criar projeto Vercel → setar `VITE_API_URL` + `VITE_API_KEY` | **pendente (Thiago)** |
 | 🔴 | Testar PWA no celular (instalar via "Adicionar à tela de início") | **pendente** |
 
-**Env vars necessárias no Railway:**
+**Env vars necessárias no Render:**
 - `ConnectionStrings__Postgres` = connection string do Neon
 - `ANTHROPIC_API_KEY` = chave da Anthropic
 - `AllowedOrigins` = URL do Vercel (ex: `https://financeflow.vercel.app`)
 - `API_KEY` = senha forte qualquer
 
 **Env vars necessárias no Vercel:**
-- `VITE_API_URL` = URL do Railway (ex: `https://financeflow-api.railway.app`)
+- `VITE_API_URL` = URL do Render (ex: `https://financeflow-api.onrender.com`)
 - `VITE_API_KEY` = mesma senha do `API_KEY` acima
 
 ### Fase 1 — itens pendentes (após deploy)

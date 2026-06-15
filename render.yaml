@@ -1,0 +1,23 @@
+# Render Blueprint — infraestrutura como código.
+# Ao conectar o repo no Render (Blueprints), ele lê este arquivo e cria o serviço.
+# Docs: https://render.com/docs/blueprint-spec
+services:
+  - type: web
+    name: financeflow-api
+    runtime: docker
+    plan: free                       # free: dorme após inatividade (cold start ~30s) — ok p/ uso pessoal
+    dockerfilePath: ./src/FinanceFlow.Api/Dockerfile
+    dockerContext: .                 # contexto = raiz do repo (o Dockerfile faz COPY a partir daqui)
+    healthCheckPath: /health         # Render só roteia tráfego depois que /health responde 200
+    envVars:
+      - key: ASPNETCORE_ENVIRONMENT
+        value: Production
+      # sync:false = NÃO commitar o valor; você preenche no dashboard do Render (são segredos).
+      - key: ConnectionStrings__Postgres   # connection string do Neon (formato .NET/Npgsql)
+        sync: false
+      - key: ANTHROPIC_API_KEY             # chave da Anthropic (rotacionar a antiga!)
+        sync: false
+      - key: AllowedOrigins                # URL do front no Vercel, ex: https://financeflow.vercel.app
+        sync: false
+      - key: API_KEY                       # senha forte; o front manda em X-Api-Key
+        generateValue: true                # o Render gera um valor aleatório forte automaticamente

@@ -2,7 +2,7 @@
 
 App de **controle de gastos e previsão financeira**, mobile-first (PWA instalável), construído como projeto de aprendizado do stack **.NET + React + Kafka, data-driven**.
 
-> Monolito modular em **.NET 10** (DDD por módulos), frontend **React + TypeScript (Vite, PWA)**, **PostgreSQL** e **Kafka** (Fase 2). Roda 100% local.
+> Monolito modular em **.NET 10** (DDD por módulos), frontend **React + TypeScript (Vite, PWA)**, **PostgreSQL** e **Kafka** (Fase 2). Dev local via Docker; produção em nuvem (Render + Neon + Vercel).
 
 ---
 

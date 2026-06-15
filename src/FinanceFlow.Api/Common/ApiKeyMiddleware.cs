@@ -20,7 +20,7 @@ public sealed class ApiKeyMiddleware(RequestDelegate next, IConfiguration config
             return;
         }
 
-        // /health não exige autenticação (Railway health check)
+        // /health não exige autenticação (health check do Render)
         if (ctx.Request.Path.StartsWithSegments("/health"))
         {
             await next(ctx);

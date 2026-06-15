@@ -28,10 +28,11 @@ RUN dotnet publish src/FinanceFlow.Api/FinanceFlow.Api.csproj \
 FROM mcr.microsoft.com/dotnet/aspnet:10.0 AS runtime
 WORKDIR /app
 
-# Railway injeta a porta via $PORT; o ASP.NET lê ASPNETCORE_URLS automaticamente
-ENV ASPNETCORE_URLS=http://+:${PORT:-8080}
 ENV ASPNETCORE_ENVIRONMENT=Production
 
 COPY --from=build /app/publish .
 
-ENTRYPOINT ["dotnet", "FinanceFlow.Api.dll"]
+# Render/Railway injetam a porta via $PORT em RUNTIME. Por isso usamos a forma shell
+# do ENTRYPOINT e --urls: a variável só é resolvida quando o container sobe (não no build).
+# Se $PORT não existir (Docker local), cai em 8080.
+ENTRYPOINT ["sh", "-c", "dotnet FinanceFlow.Api.dll --urls http://+:${PORT:-8080}"]

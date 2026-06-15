@@ -59,7 +59,7 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
 // ── CORS ───────────────────────────────────────────────────────────────
-// Em produção: AllowedOrigins="https://meuapp.vercel.app" (env var no Railway).
+// Em produção: AllowedOrigins="https://meuapp.vercel.app" (env var no Render).
 // Em dev: sem essa var, cai no fallback localhost.
 const string CorsPolicy = "financeflow-cors";
 var allowedOrigins = (builder.Configuration["AllowedOrigins"] ?? "http://localhost:5173")
