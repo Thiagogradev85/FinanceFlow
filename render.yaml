@@ -6,6 +6,7 @@ services:
     name: financeflow-api
     runtime: docker
     plan: free                       # free: dorme após inatividade (cold start ~30s) — ok p/ uso pessoal
+    region: ohio                     # US East — perto do Neon (Azure East US 2) p/ minimizar latência API<->DB
     dockerfilePath: ./src/FinanceFlow.Api/Dockerfile
     dockerContext: .                 # contexto = raiz do repo (o Dockerfile faz COPY a partir daqui)
     healthCheckPath: /health         # Render só roteia tráfego depois que /health responde 200
@@ -13,7 +14,7 @@ services:
       - key: ASPNETCORE_ENVIRONMENT
         value: Production
       # sync:false = NÃO commitar o valor; você preenche no dashboard do Render (são segredos).
-      - key: ConnectionStrings__Postgres   # connection string do Neon (formato .NET/Npgsql)
+      - key: ConnectionStrings__Postgres   # connection string do Neon (cole a URI postgresql:// como vem; o app converte)
         sync: false
       - key: ANTHROPIC_API_KEY             # chave da Anthropic (rotacionar a antiga!)
         sync: false
