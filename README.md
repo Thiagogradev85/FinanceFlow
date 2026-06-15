@@ -121,6 +121,24 @@ which docker                   # esperado: /usr/bin/docker
 
 ---
 
+## Deploy em nuvem (Render + Neon + Vercel)
+
+Stack de produção: **Render** (API via Docker, blueprint `render.yaml`) · **Neon** (Postgres serverless) · **Vercel** (frontend PWA). Passo a passo completo em [docs/PLANNING.md](docs/PLANNING.md).
+
+**Variáveis de ambiente da API (no Render):**
+| Variável | Valor |
+|---|---|
+| `ConnectionStrings__Postgres` | connection string do Neon (ver nota abaixo) |
+| `ANTHROPIC_API_KEY` | chave da Anthropic (assistente IA usa `ClaudeFinancialAssistant` em prod) |
+| `AllowedOrigins` | URL do front no Vercel (ex.: `https://financeflow.vercel.app`) — CORS |
+| `API_KEY` | senha forte; o front envia em `X-Api-Key` |
+
+**Variáveis do frontend (no Vercel):** `VITE_API_URL` (URL da API no Render) e `VITE_API_KEY` (mesmo valor de `API_KEY`).
+
+> **Connection string — aceita os dois formatos.** Provedores de nuvem (Neon, Heroku…) entregam a string no formato **URI** (`postgresql://user:pass@host/db?sslmode=require`), mas o Npgsql só entende o formato **key-value** (`Host=...;Database=...;Username=...`). O [`PostgresConnectionString.Normalize`](src/FinanceFlow.Api/Common/PostgresConnectionString.cs) detecta a URI e converte automaticamente no boot — então **cole a string do Neon como ela vem**, sem tradução manual. Strings key-value (dev local) passam intactas.
+
+---
+
 ## Endpoints (Fase 1)
 
 | Método | Rota | Descrição |

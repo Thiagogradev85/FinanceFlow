@@ -15,8 +15,10 @@ builder.Host.UseSerilog((context, loggerConfig) =>
     loggerConfig.ReadFrom.Configuration(context.Configuration).WriteTo.Console());
 
 // ── Connection string (mesmo banco, schemas separados por módulo) ──────
-var connectionString = builder.Configuration.GetConnectionString("Postgres")
-    ?? "Host=localhost;Port=5432;Database=financeflow;Username=financeflow;Password=financeflow123";
+// Normalize() aceita tanto o formato URI do Neon/Render quanto o key-value local.
+var connectionString = PostgresConnectionString.Normalize(
+    builder.Configuration.GetConnectionString("Postgres")
+    ?? "Host=localhost;Port=5432;Database=financeflow;Username=financeflow;Password=financeflow123");
 
 // ── Módulos (cada um registra seu DbContext + repositórios + UnitOfWork) ──
 builder.Services.AddAccountsModule(connectionString);
