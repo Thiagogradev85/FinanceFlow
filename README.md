@@ -8,6 +8,8 @@ App de **controle de gastos e previsão financeira**, mobile-first (PWA instalá
 
 ## Como rodar
 
+> **Ambiente canônico:** Ubuntu **WSL2** com o clone em **ext4 nativo** (`/home/thiag/projects/FinanceFlow`) e **Docker Engine** (sem Docker Desktop). Abra o VS Code em modo WSL apontando pra essa pasta. Detalhes na Opção 3.
+
 ### Opção 1 — VS Code (F5) ✅ recomendado
 Abra a pasta no VS Code e aperte **F5**. A configuração `🚀 FinanceFlow (back + front)`:
 1. garante o Docker ligado e sobe o Postgres (`docker compose up -d`);
@@ -15,7 +17,7 @@ Abra a pasta no VS Code e aperte **F5**. A configuração `🚀 FinanceFlow (bac
 3. inicia o Vite (abre o navegador em `http://localhost:5173`);
 4. roda a API .NET com o **debugger anexado** (`http://localhost:5080`, Swagger em `/swagger`).
 
-> Pré-requisitos: .NET 10 SDK, Node 20+, Docker Desktop, e as extensões recomendadas (VS Code sugere ao abrir: C#, Docker).
+> Pré-requisitos (no WSL2): .NET 10 SDK, Node 20+, **Docker Engine** (não Docker Desktop — ver Opção 3), e as extensões recomendadas (VS Code sugere ao abrir: C#, Docker). Abra o VS Code em **modo WSL**.
 
 ### Opção 2 — linha de comando
 ```bash
@@ -28,8 +30,8 @@ Outros scripts: `npm run dev:back` (só API), `npm run dev:front` (só web), `np
 
 No primeiro boot a API **aplica as migrations e semeia dados de exemplo** sozinha (2 contas, 3 categorias, 3 transações).
 
-### Opção 3 — WSL2 (Linux nativo, sem Docker Desktop)
-Ambiente "production-like": Docker Engine + .NET SDK + Node todos nativos no Ubuntu WSL2. Útil pra quem prefere stack Linux ou simula o ambiente de produção.
+### Opção 3 — WSL2 (Linux nativo, sem Docker Desktop) ⭐ ambiente canônico
+Docker Engine + .NET SDK + Node todos nativos no Ubuntu WSL2, com o clone em **ext4 real** (não em `/mnt/c`). É o ambiente oficial do projeto — alinhado com a XP e ~10x mais rápido em I/O que rodar a partir do disco do Windows.
 
 Pré-requisitos no **Ubuntu WSL2 (24.04+)**:
 - **Docker Engine** + plugins via repo oficial: `docker-ce`, `docker-ce-cli`, `containerd.io`, `docker-buildx-plugin`, `docker-compose-plugin`

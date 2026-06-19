@@ -35,6 +35,7 @@ Monolito modular + DDD. Um host de API (`FinanceFlow.Api`), módulos isolados em
 - Testes: xUnit, nome `Metodo_Estado_ResultadoEsperado`, AAA com linha em branco entre blocos.
 
 ## Comandos
+- **Ambiente canônico:** clone **ext4 nativo** em `/home/thiag/projects/FinanceFlow` no **Ubuntu WSL2**; Docker via **Docker Engine** (`sudo systemctl start docker`), nunca Docker Desktop. Abrir o VS Code em modo WSL nessa pasta.
 - Rodar tudo: **F5** no VS Code (config `🚀 FinanceFlow (back + front)`) ou `npm run dev`.
 - Testes: `npm test` ou `dotnet test FinanceFlow.slnx`.
 - Migrations: `dotnet ef migrations add <Nome> --project <Modulo>.Infrastructure --startup-project src/FinanceFlow.Api --context <Modulo>DbContext --output-dir Persistence/Migrations`.

@@ -1,6 +1,6 @@
-// Garante que o Docker está rodando antes de subir os containers.
-// Em Windows, tenta abrir o Docker Desktop e espera ficar pronto.
-const { execSync, spawn } = require("node:child_process");
+// Garante que o Docker Engine está rodando antes de subir os containers.
+// Ambiente canônico do projeto = Docker Engine no Ubuntu WSL2 (NÃO Docker Desktop).
+const { execSync } = require("node:child_process");
 
 function dockerIsUp() {
   try {
@@ -11,47 +11,37 @@ function dockerIsUp() {
   }
 }
 
-const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
-
-async function main() {
-  if (dockerIsUp()) {
-    console.log("✓ Docker já está rodando.");
-    return;
+// Tenta subir o Engine via systemd. `sudo -n` = não-interativo: se exigir senha,
+// falha na hora em vez de travar o script esperando input.
+function tryStartEngine() {
+  try {
+    execSync("sudo -n systemctl start docker", { stdio: "ignore" });
+    return true;
+  } catch {
+    return false;
   }
-
-  console.log("… Docker não está rodando. Tentando iniciar o Docker Desktop…");
-
-  if (process.platform === "win32") {
-    try {
-      spawn("cmd", ["/c", "start", "", "Docker Desktop"], { detached: true, stdio: "ignore" }).unref();
-    } catch {
-      // Caminho alternativo, caso não esteja no PATH/menu
-      try {
-        spawn(`${process.env.ProgramFiles}\\Docker\\Docker\\Docker Desktop.exe`, [], {
-          detached: true,
-          stdio: "ignore",
-        }).unref();
-      } catch {
-        /* ignora — cairá no timeout abaixo */
-      }
-    }
-  } else if (process.platform === "darwin") {
-    spawn("open", ["-a", "Docker"], { detached: true, stdio: "ignore" }).unref();
-  }
-
-  const timeoutMs = 120_000;
-  const start = Date.now();
-  while (Date.now() - start < timeoutMs) {
-    if (dockerIsUp()) {
-      console.log("✓ Docker está pronto.");
-      return;
-    }
-    await sleep(3000);
-    process.stdout.write(".");
-  }
-
-  console.error("\n✗ Docker não ficou pronto a tempo. Abra o Docker Desktop manualmente e rode de novo.");
-  process.exit(1);
 }
 
-main();
+if (dockerIsUp()) {
+  console.log("✓ Docker já está rodando.");
+  process.exit(0);
+}
+
+console.log("… Docker não está rodando. Tentando iniciar o Docker Engine (systemctl)…");
+if (tryStartEngine() && dockerIsUp()) {
+  console.log("✓ Docker Engine iniciado.");
+  process.exit(0);
+}
+
+console.error(
+  [
+    "",
+    "✗ Docker Engine não está rodando.",
+    "  Ambiente do projeto = Docker Engine no Ubuntu WSL2 (sem Docker Desktop).",
+    "  Suba com:  sudo systemctl start docker",
+    "  Confira:   systemctl is-active docker   (deve dizer 'active')",
+    "  Detalhes no README.md → seção 'Como rodar' (WSL2).",
+    "",
+  ].join("\n"),
+);
+process.exit(1);
