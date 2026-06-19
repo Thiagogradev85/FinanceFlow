@@ -33,35 +33,31 @@ MVP ~2 meses · com previsão ~6–7 meses · tudo ~10–12 meses. A 20h/semana,
 
 ## Próximos passos
 
-### Deploy em nuvem — branch `feat/cloud-deploy` (em andamento)
+### Deploy em nuvem — ✅ CONCLUÍDO (2026-06-15, branch `feat/cloud-deploy`)
 
-> Objetivo: acessar o app pelo celular. Stack: Render + Neon + Vercel.
+> Objetivo: acessar o app pelo celular. **App no ar:** https://financeflow-api-fco5.onrender.com
+> Decisão de arquitetura: **serviço único** no Render (não dois serviços com Vercel). A API .NET serve **também** o frontend React (build copiado pro `wwwroot`, `UseStaticFiles` + `MapFallbackToFile`). UI e API na **mesma origem** → sem CORS, sem segundo deploy. Stack: **Render** (Docker) + **Neon** (Postgres).
 
-| Prioridade | Entrega | Status |
-|---|---|---|
-| ✅ | Dockerfile multi-stage .NET 10 | feito |
-| ✅ | `render.yaml` (blueprint) + `.dockerignore` | feito |
-| ✅ | `appsettings.Production.json` | feito |
-| ✅ | CORS dinâmico via `AllowedOrigins` env var | feito |
-| ✅ | `ApiKeyMiddleware` (proteção mínima) | feito |
-| ✅ | Trocar Copilot → Claude (`ClaudeFinancialAssistant`) | feito |
-| ✅ | Frontend `api.ts` com `VITE_API_URL` + `.env.example` | feito |
-| ✅ | Assistente IA via chat (`ChatScreen`, `AssistantEndpoints`) | feito |
-| 🔴 | Criar conta Neon → copiar connection string | **pendente (Thiago)** |
-| 🔴 | Criar projeto Render (Blueprint via `render.yaml`) → conectar GitHub → setar env vars | **pendente (Thiago)** |
-| 🔴 | Rodar migrations contra Neon | **pendente (Thiago)** |
-| 🔴 | Criar projeto Vercel → setar `VITE_API_URL` + `VITE_API_KEY` | **pendente (Thiago)** |
-| 🔴 | Testar PWA no celular (instalar via "Adicionar à tela de início") | **pendente** |
+| Entrega | Status |
+|---|---|
+| Dockerfile multi-stage: stage Node builda o front → `wwwroot` + stage .NET | ✅ |
+| `render.yaml` (blueprint, region `ohio`) + `.dockerignore` | ✅ |
+| `ApiKeyMiddleware` — exige `X-Api-Key` só em `/api/*` (UI estática livre) | ✅ |
+| Connection string aceita formato URI do Neon (`PostgresConnectionString.Normalize`) | ✅ |
+| Migrations + seed automáticos no boot (`UseDatabaseStartupAsync`) | ✅ |
+| Conta Neon + projeto Render (Blueprint) + env vars | ✅ |
+| App live, `/health` 200, `/api/*` protegido, UI servida na raiz | ✅ |
 
-**Env vars necessárias no Render:**
-- `ConnectionStrings__Postgres` = connection string do Neon
-- `ANTHROPIC_API_KEY` = chave da Anthropic
-- `AllowedOrigins` = URL do Vercel (ex: `https://financeflow.vercel.app`)
-- `API_KEY` = senha forte qualquer
+**Env vars no Render (serviço único):**
+- `ConnectionStrings__Postgres` = URI do Neon (colada como vem; o app converte)
+- `ANTHROPIC_API_KEY` = chave da Anthropic *(hoje `placeholder` → chat IA inativo até pôr chave com crédito)*
+- `API_KEY` = gerada pelo Render; usada em runtime (`X-Api-Key`) **e** em build-time (vira `VITE_API_KEY` via build-arg, embutida no bundle do front)
 
-**Env vars necessárias no Vercel:**
-- `VITE_API_URL` = URL do Render (ex: `https://financeflow-api.onrender.com`)
-- `VITE_API_KEY` = mesma senha do `API_KEY` acima
+**Pendências pós-deploy (ação Thiago):**
+- 🔐 Rotacionar a senha do Neon (passou pelo chat) → atualizar `ConnectionStrings__Postgres`.
+- 📱 Instalar o PWA no celular ("Adicionar à tela de início").
+- 🤖 Pôr chave Anthropic com crédito pra ativar a aba "IA".
+- 🔀 Merge `feat/cloud-deploy` → `main` e reapontar o Render pra `main`.
 
 ### Fase 1 — itens pendentes (após deploy)
 
