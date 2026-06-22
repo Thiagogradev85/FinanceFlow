@@ -147,7 +147,9 @@ Stack de produção: **Render** (serviço único via Docker, blueprint `render.y
 | GET | `/api/dashboard?year=&month=` | Saldo total + entradas/saídas do mês |
 | GET / POST / PUT / DELETE | `/api/accounts` · `/api/accounts/{id}` | CRUD de contas |
 | GET / POST / PUT / DELETE | `/api/categories` · `/api/categories/{id}` | CRUD de categorias (receita/despesa) |
-| GET / POST / PUT / DELETE | `/api/transactions?year=&month=` · `/api/transactions/{id}` | CRUD de transações |
+| GET / POST / PUT / DELETE | `/api/transactions?year=&month=` · `/api/transactions/{id}` | CRUD de transações (sem `year/month` → últimas de todos os meses; com ambos → filtra o mês) |
+| POST | `/api/transactions/installment` | Compra parcelada: cria N despesas mensais (valor da parcela × nº de vezes) |
+| GET | `/api/transactions/commitments?months=` | Total parcelado já comprometido para os próximos meses |
 | GET | `/health` | Healthcheck |
 
 > No app a navegação é por **abas** embaixo: Início (saldo + últimas), Transações (toque pra editar), Categorias e Contas. Editar/excluir usa **soft delete** (arquiva, preserva histórico).
@@ -212,4 +214,4 @@ O projeto tem agentes configurados para **Claude Code** e **GitHub Copilot** no 
 ---
 
 ## Status
-**Fase 1 (MVP)** funcionando: contas, categorias, transações e dashboard ponta a ponta — ainda **sem Kafka** (o `IEventBus` usa um logger; trocar por Kafka na Fase 2 é uma linha).
+**Fase 1 (MVP)** funcionando: contas, categorias, transações e dashboard ponta a ponta — ainda **sem Kafka** (o `IEventBus` usa um logger; trocar por Kafka na Fase 2 é uma linha). Inclui **compras parceladas** (N despesas mensais, card "Comprometido", saldo realizado×agendado) e **chat IA** por linguagem natural (Anthropic em prod).

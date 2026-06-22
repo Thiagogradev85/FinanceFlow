@@ -3,6 +3,7 @@ bin/
 obj/
 *.user
 *.suo
+*.tsbuildinfo
 .vs/
 [Dd]ebug/
 [Rr]elease/

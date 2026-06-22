@@ -18,6 +18,9 @@ public sealed class Transaction : AggregateRoot
     public DateOnly OccurredOn { get; private set; }     // data que aconteceu (sem hora → sem bug de fuso)
     public string Description { get; private set; } = string.Empty;
     public Guid? TransferGroupId { get; private set; }   // liga as duas pernas de uma transferência
+    public Guid? InstallmentGroupId { get; private set; } // liga as N parcelas de uma compra parcelada
+    public int? InstallmentNumber { get; private set; }   // 1..N — qual parcela é esta
+    public int? InstallmentCount { get; private set; }    // N — total de parcelas
     public bool IsDeleted { get; private set; }
     public DateTime CreatedAtUtc { get; private set; }
     public DateTime UpdatedAtUtc { get; private set; }
@@ -123,6 +126,71 @@ public sealed class Transaction : AggregateRoot
         };
 
         return (outLeg, inLeg);
+    }
+
+    /// <summary>
+    /// Cria as N parcelas de uma compra parcelada (sempre despesa), uma por mês, ligadas pelo
+    /// mesmo InstallmentGroupId. O valor é o da PARCELA, não o total: cada mês recebe exatamente
+    /// esse valor (total = installmentAmount × installmentCount). A 1ª parcela cai em
+    /// firstOccurredOn; as seguintes em firstOccurredOn.AddMonths(i) — o AddMonths já corrige
+    /// fim de mês (31/jan → 28/fev). Como na transferência, quem chama deve salvar TODAS na
+    /// mesma transação SQL (UnitOfWork).
+    /// </summary>
+    public static Result<IReadOnlyList<Transaction>> CreateInstallmentPurchase(
+        Guid userId,
+        Guid accountId,
+        Guid categoryId,
+        decimal installmentAmount,
+        int installmentCount,
+        string currency,
+        DateOnly firstOccurredOn,
+        string description)
+    {
+        if (installmentCount < 2)
+            return AppError.Validation("installment.count_min", "Parcelamento exige ao menos 2 parcelas.");
+        if (installmentAmount <= 0)
+            return AppError.Validation("installment.amount_positive", "Valor da parcela deve ser positivo.");
+        if (string.IsNullOrWhiteSpace(currency))
+            return AppError.Validation("transaction.currency_required", "Moeda é obrigatória.");
+
+        var groupId = Guid.NewGuid();
+        var now = DateTime.UtcNow;
+        var baseDescription = description?.Trim() ?? string.Empty;
+
+        var installments = new List<Transaction>(installmentCount);
+        for (var i = 0; i < installmentCount; i++)
+        {
+            var number = i + 1;
+            var label = $"({number}/{installmentCount})";
+            var transaction = new Transaction
+            {
+                Id = Guid.NewGuid(),
+                UserId = userId,
+                AccountId = accountId,
+                CategoryId = categoryId,
+                Type = TransactionType.Expense,
+                Direction = TransactionDirection.Outflow,
+                Amount = installmentAmount,
+                Currency = currency,
+                OccurredOn = firstOccurredOn.AddMonths(i),
+                Description = baseDescription.Length == 0 ? label : $"{baseDescription} {label}",
+                TransferGroupId = null,
+                InstallmentGroupId = groupId,
+                InstallmentNumber = number,
+                InstallmentCount = installmentCount,
+                IsDeleted = false,
+                CreatedAtUtc = now,
+                UpdatedAtUtc = now
+            };
+
+            transaction.Raise(new TransactionCreatedDomainEvent(
+                transaction.Id, userId, accountId, transaction.Direction,
+                installmentAmount, currency, transaction.OccurredOn));
+
+            installments.Add(transaction);
+        }
+
+        return Result<IReadOnlyList<Transaction>>.Success(installments);
     }
 
     /// <summary>

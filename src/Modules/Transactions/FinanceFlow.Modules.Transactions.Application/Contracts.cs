@@ -12,7 +12,10 @@ public sealed record TransactionDto(
     decimal Amount,
     string Currency,
     DateOnly OccurredOn,
-    string Description);
+    string Description,
+    Guid? InstallmentGroupId = null,
+    int? InstallmentNumber = null,
+    int? InstallmentCount = null);
 
 public sealed record TransactionsSummaryDto(
     int Year,
@@ -21,3 +24,8 @@ public sealed record TransactionsSummaryDto(
     decimal MonthExpense,
     decimal MonthNet,
     decimal AllTimeNet);
+
+// "Comprometido": quanto de parcela já está agendado para os próximos meses.
+public sealed record MonthCommitmentDto(int Year, int Month, decimal Amount);
+
+public sealed record UpcomingCommitmentsDto(decimal Total, IReadOnlyList<MonthCommitmentDto> Months);

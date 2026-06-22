@@ -3,6 +3,8 @@ import { Plus } from "lucide-react";
 import { useDashboard } from "./lib/hooks";
 import type { TransactionDto } from "./lib/types";
 import BalanceCard from "./components/BalanceCard";
+import CommitmentsCard from "./components/CommitmentsCard";
+import MonthSelector, { thisMonth, type RefMonth } from "./components/MonthSelector";
 import TransactionList from "./components/TransactionList";
 import TransactionForm from "./components/TransactionForm";
 import CategoriesScreen from "./components/CategoriesScreen";
@@ -13,7 +15,12 @@ import BottomNav, { type Tab } from "./components/BottomNav";
 export default function App() {
   const [tab, setTab] = useState<Tab>("home");
   const [form, setForm] = useState<{ editing: TransactionDto | null } | null>(null);
-  const dashboard = useDashboard();
+  const [refMonth, setRefMonth] = useState<RefMonth>(thisMonth());
+  const dashboard = useDashboard(refMonth.year, refMonth.month);
+
+  const cur = thisMonth();
+  const isCurrentMonth = refMonth.year === cur.year && refMonth.month === cur.month;
+  const balanceLabel = isCurrentMonth ? "Saldo atual" : "Saldo previsto (fim do mês)";
 
   const openAdd = () => setForm({ editing: null });
   const openEdit = (t: TransactionDto) => setForm({ editing: t });
@@ -21,16 +28,18 @@ export default function App() {
   const showFab = tab === "home" || tab === "transactions";
 
   return (
-    <div className="mx-auto min-h-screen max-w-md px-4 pb-24 pt-6">
+    <div className="mx-auto min-h-screen max-w-md px-4 pb-36 pt-6">
       {tab === "home" && (
         <>
           <header className="mb-6">
             <h1 className="text-xl font-bold text-white">FinanceFlow</h1>
             <p className="text-sm text-slate-400">Seu controle de gastos</p>
           </header>
-          <BalanceCard query={dashboard} />
-          <h2 className="mb-2 text-sm font-semibold text-slate-300">Últimas transações</h2>
-          <TransactionList onSelect={openEdit} limit={5} />
+          <MonthSelector value={refMonth} onChange={setRefMonth} />
+          <BalanceCard query={dashboard} balanceLabel={balanceLabel} />
+          <CommitmentsCard />
+          <h2 className="mb-2 text-sm font-semibold text-slate-300">Transações do mês</h2>
+          <TransactionList onSelect={openEdit} year={refMonth.year} month={refMonth.month} />
         </>
       )}
 

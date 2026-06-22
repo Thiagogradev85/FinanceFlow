@@ -1,12 +1,16 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import api from "./api";
-import type { AccountDto, CategoryDto, DashboardDto, TransactionDto } from "./types";
+import type { AccountDto, CategoryDto, DashboardDto, TransactionDto, UpcomingCommitmentsDto } from "./types";
 
 // ───────────────────────── Queries ─────────────────────────
 const ALWAYS = { refetchOnMount: "always" as const };
 
-export const useDashboard = () =>
-  useQuery({ queryKey: ["dashboard"], queryFn: async () => (await api.get<DashboardDto>("/dashboard")).data, ...ALWAYS });
+export const useDashboard = (year?: number, month?: number) =>
+  useQuery({
+    queryKey: ["dashboard", year ?? null, month ?? null],
+    queryFn: async () => (await api.get<DashboardDto>("/dashboard", { params: { year, month } })).data,
+    ...ALWAYS,
+  });
 
 export const useAccounts = () =>
   useQuery({ queryKey: ["accounts"], queryFn: async () => (await api.get<AccountDto[]>("/accounts")).data, ...ALWAYS });
@@ -14,8 +18,19 @@ export const useAccounts = () =>
 export const useCategories = () =>
   useQuery({ queryKey: ["categories"], queryFn: async () => (await api.get<CategoryDto[]>("/categories")).data, ...ALWAYS });
 
-export const useTransactions = () =>
-  useQuery({ queryKey: ["transactions"], queryFn: async () => (await api.get<TransactionDto[]>("/transactions")).data, ...ALWAYS });
+export const useTransactions = (year?: number, month?: number) =>
+  useQuery({
+    queryKey: ["transactions", year ?? null, month ?? null],
+    queryFn: async () => (await api.get<TransactionDto[]>("/transactions", { params: { year, month } })).data,
+    ...ALWAYS,
+  });
+
+export const useCommitments = (months = 6) =>
+  useQuery({
+    queryKey: ["commitments", months],
+    queryFn: async () => (await api.get<UpcomingCommitmentsDto>(`/transactions/commitments?months=${months}`)).data,
+    ...ALWAYS,
+  });
 
 // ─────────────────────── Transações ────────────────────────
 export interface TransactionInput {
@@ -32,7 +47,7 @@ export const useCreateTransaction = () => {
   return useMutation({
     mutationFn: async (input: TransactionInput) =>
       (await api.post<TransactionDto>("/transactions", { currency: "BRL", ...input })).data,
-    onSuccess: () => invalidate(qc, ["transactions", "dashboard"]),
+    onSuccess: () => invalidate(qc, ["transactions", "dashboard", "commitments"]),
   });
 };
 
@@ -41,7 +56,7 @@ export const useUpdateTransaction = () => {
   return useMutation({
     mutationFn: async ({ id, ...input }: TransactionInput & { id: string }) =>
       (await api.put<TransactionDto>(`/transactions/${id}`, { currency: "BRL", ...input })).data,
-    onSuccess: () => invalidate(qc, ["transactions", "dashboard"]),
+    onSuccess: () => invalidate(qc, ["transactions", "dashboard", "commitments"]),
   });
 };
 
@@ -49,7 +64,25 @@ export const useDeleteTransaction = () => {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: async (id: string) => api.delete(`/transactions/${id}`),
-    onSuccess: () => invalidate(qc, ["transactions", "dashboard"]),
+    onSuccess: () => invalidate(qc, ["transactions", "dashboard", "commitments"]),
+  });
+};
+
+export interface InstallmentInput {
+  accountId: string;
+  categoryId: string;
+  installmentAmount: number;
+  installmentCount: number;
+  firstOccurredOn: string;
+  description: string;
+}
+
+export const useCreateInstallment = () => {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (input: InstallmentInput) =>
+      (await api.post<TransactionDto[]>("/transactions/installment", { currency: "BRL", ...input })).data,
+    onSuccess: () => invalidate(qc, ["transactions", "dashboard", "commitments"]),
   });
 };
 

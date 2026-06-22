@@ -26,6 +26,20 @@ export interface TransactionDto {
   currency: string;
   occurredOn: string; // "2026-05-21"
   description: string;
+  installmentGroupId?: string | null;
+  installmentNumber?: number | null; // 1..N — qual parcela
+  installmentCount?: number | null; // N — total de parcelas
+}
+
+export interface MonthCommitmentDto {
+  year: number;
+  month: number;
+  amount: number;
+}
+
+export interface UpcomingCommitmentsDto {
+  total: number;
+  months: MonthCommitmentDto[];
 }
 
 export interface DashboardDto {

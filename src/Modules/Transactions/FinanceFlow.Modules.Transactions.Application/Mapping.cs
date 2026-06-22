@@ -9,5 +9,6 @@ internal static class Mapping
 
     public static TransactionDto ToDto(this Transaction t) =>
         new(t.Id, t.AccountId, t.CategoryId, (int)t.Type, (int)t.Direction,
-            t.Amount, t.Currency, t.OccurredOn, t.Description);
+            t.Amount, t.Currency, t.OccurredOn, t.Description,
+            t.InstallmentGroupId, t.InstallmentNumber, t.InstallmentCount);
 }
