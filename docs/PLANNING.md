@@ -77,8 +77,9 @@ MVP ~2 meses · com previsão ~6–7 meses · tudo ~10–12 meses. A 20h/semana,
 
 | Prioridade | Entrega | Status |
 |---|---|---|
+| ✅ — | Conta principal escolhível (`IsPrimary` + `POST /accounts/{id}/primary` + estrela; form/IA caem na principal) | feito (2026-06-26) |
+| 🔵 — | Tela de Análise: gastos por categoria + insights (branch `feat/insights-categorias`) | em andamento |
 | 🔴 1 | Saldo atual por conta no dashboard (abertura + entradas − saídas por conta) | pendente |
-| 🔴 2 | Conta principal escolhível (flag `IsPrimary` + estrela na tela de Contas) | pendente |
 | 🟡 3 | Endpoint de transferência entre contas (`CreateTransferPair`) | pendente |
 | 🟡 4 | Chat IA: crédito na conta Anthropic (+ rotacionar chave) | pendente |
 

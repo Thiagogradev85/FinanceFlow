@@ -146,13 +146,14 @@ Stack de produção: **Render** (serviço único via Docker, blueprint `render.y
 |--------|------|-----------|
 | GET | `/api/dashboard?year=&month=` | Saldo total + entradas/saídas do mês |
 | GET / POST / PUT / DELETE | `/api/accounts` · `/api/accounts/{id}` | CRUD de contas |
+| POST | `/api/accounts/{id}/primary` | Define a conta principal (form e chat IA caem nela) |
 | GET / POST / PUT / DELETE | `/api/categories` · `/api/categories/{id}` | CRUD de categorias (receita/despesa) |
 | GET / POST / PUT / DELETE | `/api/transactions?year=&month=` · `/api/transactions/{id}` | CRUD de transações (sem `year/month` → últimas de todos os meses; com ambos → filtra o mês) |
 | POST | `/api/transactions/installment` | Compra parcelada: cria N despesas mensais (valor da parcela × nº de vezes) |
 | GET | `/api/transactions/commitments?months=` | Total parcelado já comprometido para os próximos meses |
 | GET | `/health` | Healthcheck |
 
-> No app a navegação é por **abas** embaixo: Início (saldo + últimas), Transações (toque pra editar), Categorias e Contas. Editar/excluir usa **soft delete** (arquiva, preserva histórico).
+> No app a navegação é por **abas** embaixo: Início (saldo + últimas), Transações (toque pra editar), Categorias e Contas. Editar/excluir usa **soft delete** (arquiva, preserva histórico). Na aba **Contas**, a estrela ⭐ define a **conta principal** — o form de transação e o chat IA passam a usar ela por padrão (a 1ª conta criada já vira principal sozinha).
 
 Swagger: `http://localhost:5080/swagger`.
 
