@@ -6,6 +6,7 @@ export interface AccountDto {
   type: number;
   currency: string;
   openingBalance: number;
+  isPrimary: boolean;
 }
 
 export interface CategoryDto {

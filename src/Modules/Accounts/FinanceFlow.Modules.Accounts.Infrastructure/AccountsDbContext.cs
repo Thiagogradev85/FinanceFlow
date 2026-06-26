@@ -30,6 +30,7 @@ internal sealed class AccountConfiguration : IEntityTypeConfiguration<Account>
         b.Property(x => x.Currency).HasMaxLength(3).IsRequired();
         b.Property(x => x.OpeningBalance).HasPrecision(18, 2);
         b.Property(x => x.Type).HasConversion<int>();
+        b.Property(x => x.IsPrimary).HasDefaultValue(false);
 
         b.HasIndex(x => x.UserId);
         b.Ignore(x => x.DomainEvents);

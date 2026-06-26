@@ -46,6 +46,9 @@ public static class AccountsEndpoints
             (await sender.Send(
                 new UpdateAccountCommand(id, DemoUser.Id, req.Name, 0m), ct)).ToHttp());
 
+        group.MapPost("/{id:guid}/primary", async (Guid id, ISender sender, CancellationToken ct) =>
+            (await sender.Send(new SetPrimaryAccountCommand(id, DemoUser.Id), ct)).ToHttp());
+
         group.MapDelete("/{id:guid}", async (Guid id, ISender sender, CancellationToken ct) =>
             (await sender.Send(new DeleteAccountCommand(id, DemoUser.Id), ct)).ToHttp());
     }

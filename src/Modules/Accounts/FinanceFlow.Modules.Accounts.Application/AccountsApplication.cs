@@ -11,7 +11,8 @@ public sealed record AccountDto(
     string Name,
     int Type,
     string Currency,
-    decimal OpeningBalance);
+    decimal OpeningBalance,
+    bool IsPrimary);
 
 public interface IAccountsUnitOfWork : IUnitOfWork;
 
@@ -24,5 +25,5 @@ public interface IAccountRepository : IRepository<Account>
 internal static class AccountMapping
 {
     public static AccountDto ToDto(this Account a) =>
-        new(a.Id, a.Name, (int)a.Type, a.Currency, a.OpeningBalance);
+        new(a.Id, a.Name, (int)a.Type, a.Currency, a.OpeningBalance, a.IsPrimary);
 }

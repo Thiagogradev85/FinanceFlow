@@ -144,6 +144,14 @@ export const useDeleteAccount = () => {
   });
 };
 
+export const useSetPrimaryAccount = () => {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (id: string) => (await api.post<AccountDto>(`/accounts/${id}/primary`)).data,
+    onSuccess: () => invalidate(qc, ["accounts"]),
+  });
+};
+
 function invalidate(qc: ReturnType<typeof useQueryClient>, keys: string[]) {
   keys.forEach((key) => qc.invalidateQueries({ queryKey: [key] }));
 }

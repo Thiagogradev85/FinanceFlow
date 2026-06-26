@@ -53,7 +53,7 @@ export default function TransactionForm({
 
   const submit = async (e: FormEvent) => {
     e.preventDefault();
-    const accountIdFinal = accountId || accounts?.[0]?.id || "";
+    const accountIdFinal = accountId || accounts?.find((a) => a.isPrimary)?.id || accounts?.[0]?.id || "";
     const categoryIdFinal = categoryId || filteredCategories?.[0]?.id || "";
 
     if (useInstallment) {
