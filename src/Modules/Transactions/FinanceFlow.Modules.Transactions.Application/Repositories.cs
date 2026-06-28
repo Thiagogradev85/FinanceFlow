@@ -22,4 +22,8 @@ public interface ITransactionRepository : IRepository<Transaction>
     // Total parcelado comprometido por mês, no intervalo [fromInclusive, toExclusive).
     Task<IReadOnlyList<MonthCommitmentDto>> GetMonthlyCommittedInstallmentsAsync(
         Guid userId, DateOnly fromInclusive, DateOnly toExclusive, CancellationToken ct = default);
+
+    // Gastos do mês agrupados por categoria (somente Outflow, sem Transfer).
+    Task<IReadOnlyList<CategoryBreakdownRawDto>> GetCategoryBreakdownAsync(
+        Guid userId, int year, int month, CancellationToken ct = default);
 }

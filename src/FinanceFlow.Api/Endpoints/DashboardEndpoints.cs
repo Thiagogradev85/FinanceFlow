@@ -39,5 +39,17 @@ public static class DashboardEndpoints
 
             return Results.Ok(dto);
         }).WithTags("Dashboard");
+
+        app.MapGet("/api/dashboard/breakdown", async (
+            int? year, int? month,
+            IClock clock, ISender sender, CancellationToken ct) =>
+        {
+            var now = clock.UtcNow;
+            var y = year ?? now.Year;
+            var m = month ?? now.Month;
+
+            var result = await sender.Send(new GetCategoryBreakdownQuery(DemoUser.Id, y, m), ct);
+            return result.ToHttp();
+        }).WithTags("Dashboard");
     }
 }

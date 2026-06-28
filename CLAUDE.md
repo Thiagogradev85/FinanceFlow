@@ -10,10 +10,16 @@ A doc rica vive no **vault Obsidian** deste projeto: `C:\Users\thiag\Documents\O
 - Datas no vault: usar a data real (absoluta), nunca relativa.
 
 ## Fluxo de branch + deploy (obrigatório)
-1. **Render aponta sempre pra `main`** — nunca apontar pra feature branch.
-2. **Push no fim de cada sessão** — toda mudança da sessão deve ser pushada (`git push`) antes de encerrar, mesmo que a feature ainda não esteja completa.
-3. **Merge na `main` ao fechar uma feature** — quando concluída, fazer fast-forward na `main` + push.
-4. **Perguntar antes de apagar branch** — após merge confirmado e doc atualizada, perguntar ao Thiago se pode apagar. Nunca apagar sem aprovação.
+
+**`main` = produção.** Render aponta sempre pra `main`. Nunca mergear sem autorização do Thiago.
+
+Fluxo: `feat/<nome>` → *(homologação se necessário)* → `main`
+
+1. **Toda feature numa branch própria** (`feat/<nome>`) a partir da `main`.
+2. **Push no fim de cada sessão** — mesmo que incompleta, para não ficar só local.
+3. **Merge na `main` só com autorização** — perguntar antes. Fazer ff quando possível.
+4. **Perguntar antes de apagar branch** — nunca apagar sem aprovação explícita.
+5. **Homologação opcional** — para features grandes/arriscadas, criar `homolog/<nome>` antes de ir pra `main`.
 
 ## O que é
 Controle de gastos + previsão financeira. Mobile-first PWA. Stack de aprendizado: .NET 10 + React/TS + Kafka, data-driven. Dev local (Docker); produção em nuvem (serviço único no Render: API + front estático, + Neon).
