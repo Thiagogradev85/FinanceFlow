@@ -9,6 +9,12 @@ A doc rica vive no **vault Obsidian** deste projeto: `C:\Users\thiag\Documents\O
 - **Ao concluir uma mudança importante**, proativamente e sem esperar o fim da sessão, manter sincronizados: o **vault** (`Estado Atual` → "Sessões recentes"; `Próximos Passos`; e `Decisões Estratégicas` se houve decisão), o **README**/docs quando o que mudou afeta o leitor, e **sugerir um commit** (mensagem pronta) — esperando a aprovação do Thiago (sim/não) antes de commitar.
 - Datas no vault: usar a data real (absoluta), nunca relativa.
 
+## Fluxo de branch + deploy (obrigatório)
+1. **Render aponta sempre pra `main`** — nunca apontar pra feature branch.
+2. **Push no fim de cada sessão** — toda mudança da sessão deve ser pushada (`git push`) antes de encerrar, mesmo que a feature ainda não esteja completa.
+3. **Merge na `main` ao fechar uma feature** — quando concluída, fazer fast-forward na `main` + push.
+4. **Perguntar antes de apagar branch** — após merge confirmado e doc atualizada, perguntar ao Thiago se pode apagar. Nunca apagar sem aprovação.
+
 ## O que é
 Controle de gastos + previsão financeira. Mobile-first PWA. Stack de aprendizado: .NET 10 + React/TS + Kafka, data-driven. Dev local (Docker); produção em nuvem (serviço único no Render: API + front estático, + Neon).
 
