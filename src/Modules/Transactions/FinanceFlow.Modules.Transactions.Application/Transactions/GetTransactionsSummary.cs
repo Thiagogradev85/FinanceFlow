@@ -12,9 +12,14 @@ public sealed class GetTransactionsSummaryHandler(ITransactionRepository transac
     public async Task<Result<TransactionsSummaryDto>> Handle(GetTransactionsSummaryQuery query, CancellationToken ct)
     {
         var (income, expense) = await transactions.GetMonthTotalsAsync(query.UserId, query.Year, query.Month, ct);
-        var allTimeNet = await transactions.GetAllTimeNetAsync(query.UserId, ct);
+
+        // Saldo PREVISTO até o fim do mês de referência: net de tudo com OccurredOn <= último dia do mês.
+        // Mês futuro → projeta o impacto das parcelas; mês corrente → equivale ao saldo de hoje
+        // (não há nada lançado entre hoje e o fim do mês); mês passado → como o saldo estava lá.
+        var endOfMonth = new DateOnly(query.Year, query.Month, 1).AddMonths(1).AddDays(-1);
+        var projectedNet = await transactions.GetAllTimeNetAsync(query.UserId, endOfMonth, ct);
 
         return new TransactionsSummaryDto(
-            query.Year, query.Month, income, expense, income - expense, allTimeNet);
+            query.Year, query.Month, income, expense, income - expense, projectedNet);
     }
 }

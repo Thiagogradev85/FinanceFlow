@@ -30,6 +30,17 @@ internal sealed class TransactionRepository(TransactionsDbContext db) : ITransac
             .ToListAsync(ct);
     }
 
+    public async Task<IReadOnlyList<Transaction>> ListRecentByUserAsync(
+        Guid userId, int take, CancellationToken ct = default)
+    {
+        return await db.Transactions
+            .Where(t => t.UserId == userId)
+            .OrderByDescending(t => t.OccurredOn)
+            .ThenByDescending(t => t.CreatedAtUtc)
+            .Take(take)
+            .ToListAsync(ct);
+    }
+
     public async Task<(decimal income, decimal expense)> GetMonthTotalsAsync(
         Guid userId, int year, int month, CancellationToken ct = default)
     {
@@ -52,17 +63,40 @@ internal sealed class TransactionRepository(TransactionsDbContext db) : ITransac
         return (income, expense);
     }
 
-    public async Task<decimal> GetAllTimeNetAsync(Guid userId, CancellationToken ct = default)
+    public async Task<decimal> GetAllTimeNetAsync(Guid userId, DateOnly asOf, CancellationToken ct = default)
     {
-        var inflow = await db.Transactions
-            .Where(t => t.UserId == userId && t.Direction == TransactionDirection.Inflow)
+        // Só o realizado: transações até a data de corte (asOf = hoje). Parcelas futuras ficam de fora.
+        var realized = db.Transactions.Where(t => t.UserId == userId && t.OccurredOn <= asOf);
+
+        var inflow = await realized
+            .Where(t => t.Direction == TransactionDirection.Inflow)
             .SumAsync(t => (decimal?)t.Amount, ct) ?? 0m;
 
-        var outflow = await db.Transactions
-            .Where(t => t.UserId == userId && t.Direction == TransactionDirection.Outflow)
+        var outflow = await realized
+            .Where(t => t.Direction == TransactionDirection.Outflow)
             .SumAsync(t => (decimal?)t.Amount, ct) ?? 0m;
 
         return inflow - outflow;
+    }
+
+    public async Task<IReadOnlyList<MonthCommitmentDto>> GetMonthlyCommittedInstallmentsAsync(
+        Guid userId, DateOnly fromInclusive, DateOnly toExclusive, CancellationToken ct = default)
+    {
+        // Parcelas (InstallmentGroupId != null) que vencem no intervalo. Agrupa por mês em memória
+        // (volume baixo) para não depender da tradução de GroupBy(Year/Month) pro SQL.
+        var rows = await db.Transactions
+            .Where(t => t.UserId == userId
+                && t.InstallmentGroupId != null
+                && t.Direction == TransactionDirection.Outflow
+                && t.OccurredOn >= fromInclusive && t.OccurredOn < toExclusive)
+            .Select(t => new { t.OccurredOn, t.Amount })
+            .ToListAsync(ct);
+
+        return rows
+            .GroupBy(r => new { r.OccurredOn.Year, r.OccurredOn.Month })
+            .Select(g => new MonthCommitmentDto(g.Key.Year, g.Key.Month, g.Sum(x => x.Amount)))
+            .OrderBy(m => m.Year).ThenBy(m => m.Month)
+            .ToList();
     }
 
     private static (DateOnly start, DateOnly end) MonthRange(int year, int month)

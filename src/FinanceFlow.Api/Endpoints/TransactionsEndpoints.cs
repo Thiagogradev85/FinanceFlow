@@ -30,6 +30,15 @@ public static class TransactionsEndpoints
         string Description,
         string Currency = "BRL");
 
+    public sealed record CreateInstallmentPurchaseRequest(
+        Guid AccountId,
+        Guid CategoryId,
+        decimal InstallmentAmount,
+        int InstallmentCount,
+        DateOnly FirstOccurredOn,
+        string Description,
+        string Currency = "BRL");
+
     public static void MapTransactionsEndpoints(this IEndpointRouteBuilder app)
     {
         var categories = app.MapGroup("/api/categories").WithTags("Categories");
@@ -50,17 +59,24 @@ public static class TransactionsEndpoints
 
         var transactions = app.MapGroup("/api/transactions").WithTags("Transactions");
 
-        transactions.MapGet("/", async (int? year, int? month, IClock clock, ISender sender, CancellationToken ct) =>
-        {
-            var now = clock.UtcNow;
-            return (await sender.Send(
-                new ListTransactionsQuery(DemoUser.Id, year ?? now.Year, month ?? now.Month), ct)).ToHttp();
-        });
+        // Sem year/month: últimas transações de todos os meses (pra ver e corrigir lançamentos).
+        transactions.MapGet("/", async (int? year, int? month, ISender sender, CancellationToken ct) =>
+            (await sender.Send(new ListTransactionsQuery(DemoUser.Id, year, month), ct)).ToHttp());
 
         transactions.MapPost("/", async (CreateTransactionRequest req, ISender sender, CancellationToken ct) =>
             (await sender.Send(new CreateTransactionCommand(
                 DemoUser.Id, req.AccountId, req.CategoryId, req.Type,
                 req.Amount, req.OccurredOn, req.Description, req.Currency), ct)).ToHttp());
+
+        // Compra parcelada: gera N despesas mensais (uma por mês) numa só operação.
+        transactions.MapPost("/installment", async (CreateInstallmentPurchaseRequest req, ISender sender, CancellationToken ct) =>
+            (await sender.Send(new CreateInstallmentPurchaseCommand(
+                DemoUser.Id, req.AccountId, req.CategoryId,
+                req.InstallmentAmount, req.InstallmentCount, req.FirstOccurredOn, req.Description, req.Currency), ct)).ToHttp());
+
+        // "Comprometido": total parcelado já agendado para os próximos meses.
+        transactions.MapGet("/commitments", async (int? months, ISender sender, CancellationToken ct) =>
+            (await sender.Send(new GetUpcomingCommitmentsQuery(DemoUser.Id, months ?? 6), ct)).ToHttp());
 
         transactions.MapPut("/{id:guid}", async (Guid id, UpdateTransactionRequest req, ISender sender, CancellationToken ct) =>
             (await sender.Send(new UpdateTransactionCommand(

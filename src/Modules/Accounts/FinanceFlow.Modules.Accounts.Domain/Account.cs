@@ -15,6 +15,13 @@ public sealed class Account : AggregateRoot
     public string Currency { get; private set; } = "BRL";
     public decimal OpeningBalance { get; private set; }
     public bool IsArchived { get; private set; }
+
+    /// <summary>
+    /// Conta padrão do usuário (form e chat IA caem nela). A invariante "só uma principal por
+    /// usuário" cruza vários agregados Account, então é coordenada na Application (handler),
+    /// não aqui dentro. Esta entidade só sabe ligar/desligar a própria flag.
+    /// </summary>
+    public bool IsPrimary { get; private set; }
     public DateTime CreatedAtUtc { get; private set; }
     public DateTime UpdatedAtUtc { get; private set; }
 
@@ -70,6 +77,20 @@ public sealed class Account : AggregateRoot
     public void Archive()
     {
         IsArchived = true;
+        UpdatedAtUtc = DateTime.UtcNow;
+    }
+
+    public void MakePrimary()
+    {
+        if (IsPrimary) return;
+        IsPrimary = true;
+        UpdatedAtUtc = DateTime.UtcNow;
+    }
+
+    public void ClearPrimary()
+    {
+        if (!IsPrimary) return;
+        IsPrimary = false;
         UpdatedAtUtc = DateTime.UtcNow;
     }
 }

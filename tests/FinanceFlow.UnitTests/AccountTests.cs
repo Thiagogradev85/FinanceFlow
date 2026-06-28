@@ -32,4 +32,33 @@ public class AccountTests
 
         Assert.True(result.IsFailure);
     }
+
+    [Fact]
+    public void Create_ByDefault_IsNotPrimary()
+    {
+        var account = Account.Create(User, "Carteira", AccountType.Cash).Value;
+
+        Assert.False(account.IsPrimary);
+    }
+
+    [Fact]
+    public void MakePrimary_OnNonPrimaryAccount_SetsIsPrimary()
+    {
+        var account = Account.Create(User, "Carteira", AccountType.Cash).Value;
+
+        account.MakePrimary();
+
+        Assert.True(account.IsPrimary);
+    }
+
+    [Fact]
+    public void ClearPrimary_OnPrimaryAccount_UnsetsIsPrimary()
+    {
+        var account = Account.Create(User, "Carteira", AccountType.Cash).Value;
+        account.MakePrimary();
+
+        account.ClearPrimary();
+
+        Assert.False(account.IsPrimary);
+    }
 }

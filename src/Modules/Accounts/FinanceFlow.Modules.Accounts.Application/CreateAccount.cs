@@ -31,6 +31,11 @@ public sealed class CreateAccountHandler(IAccountRepository accounts, IAccountsU
         if (result.IsFailure)
             return result.Error!;
 
+        // Primeira conta do usuário vira principal automaticamente — sempre há uma padrão.
+        var existing = await accounts.ListByUserAsync(cmd.UserId, ct);
+        if (existing.Count == 0)
+            result.Value.MakePrimary();
+
         await accounts.AddAsync(result.Value, ct);
         await uow.SaveChangesAsync(ct);
 

@@ -19,7 +19,8 @@ internal sealed class AccountRepository(AccountsDbContext db) : IAccountReposito
     public async Task<IReadOnlyList<Account>> ListByUserAsync(Guid userId, CancellationToken ct = default) =>
         await db.Accounts
             .Where(a => a.UserId == userId && !a.IsArchived)
-            .OrderBy(a => a.Name)
+            .OrderByDescending(a => a.IsPrimary)
+            .ThenBy(a => a.Name)
             .ToListAsync(ct);
 
     public async Task<decimal> GetOpeningTotalAsync(Guid userId, CancellationToken ct = default) =>

@@ -5,11 +5,15 @@ import type { TransactionDto } from "../lib/types";
 export default function TransactionList({
   onSelect,
   limit,
+  year,
+  month,
 }: {
   onSelect?: (t: TransactionDto) => void;
   limit?: number;
+  year?: number;
+  month?: number;
 }) {
-  const { data, isPending, isFetching, isError } = useTransactions();
+  const { data, isPending, isFetching, isError } = useTransactions(year, month);
   const { data: categories } = useCategories();
 
   const categoryName = (id: string | null) => categories?.find((c) => c.id === id)?.name ?? "Transferência";
@@ -32,7 +36,14 @@ export default function TransactionList({
             className="flex w-full items-center justify-between rounded-xl bg-slate-800 p-3 text-left disabled:cursor-default"
           >
             <div>
-              <p className="text-sm text-white">{t.description || categoryName(t.categoryId)}</p>
+              <p className="flex items-center gap-2 text-sm text-white">
+                <span>{t.description || categoryName(t.categoryId)}</span>
+                {t.installmentCount && (
+                  <span className="rounded-full bg-indigo-500/20 px-2 py-0.5 text-[10px] font-medium text-indigo-300">
+                    {t.installmentNumber}/{t.installmentCount}
+                  </span>
+                )}
+              </p>
               <p className="text-xs text-slate-500">{categoryName(t.categoryId)} · {shortDate(t.occurredOn)}</p>
             </div>
             <span className={isIncome ? "font-semibold text-emerald-400" : "font-semibold text-rose-400"}>

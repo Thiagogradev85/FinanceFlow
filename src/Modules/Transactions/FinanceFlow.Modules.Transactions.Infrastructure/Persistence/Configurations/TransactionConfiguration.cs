@@ -19,6 +19,7 @@ internal sealed class TransactionConfiguration : IEntityTypeConfiguration<Transa
 
         b.HasIndex(x => new { x.UserId, x.OccurredOn });
         b.HasIndex(x => x.TransferGroupId);
+        b.HasIndex(x => x.InstallmentGroupId);
 
         // Soft delete: transações apagadas somem das queries automaticamente.
         b.HasQueryFilter(x => !x.IsDeleted);

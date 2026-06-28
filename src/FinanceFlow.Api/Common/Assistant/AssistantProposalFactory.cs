@@ -33,7 +33,8 @@ internal static class AssistantProposalFactory
 
         var accountsResult = await sender.Send(new ListAccountsQuery(userId), ct);
         if (accountsResult.IsFailure) return accountsResult.Error!;
-        var account = accountsResult.Value.FirstOrDefault();
+        var account = accountsResult.Value.FirstOrDefault(a => a.IsPrimary)
+                      ?? accountsResult.Value.FirstOrDefault();
         if (account is null)
             return AppError.Domain("assistant.no_accounts", "Cadastre uma conta antes de usar o chat.");
 

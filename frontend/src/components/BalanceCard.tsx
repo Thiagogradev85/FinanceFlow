@@ -8,7 +8,13 @@ function Card({ children }: { children: ReactNode }) {
   return <section className="mb-6 rounded-2xl bg-slate-800 p-5 text-slate-400">{children}</section>;
 }
 
-export default function BalanceCard({ query }: { query: UseQueryResult<DashboardDto> }) {
+export default function BalanceCard({
+  query,
+  balanceLabel = "Saldo total",
+}: {
+  query: UseQueryResult<DashboardDto>;
+  balanceLabel?: string;
+}) {
   if (query.isPending) return <Card>Carregando resumo…</Card>;
   if (query.isError || !query.data) return <Card>Não foi possível carregar o resumo.</Card>;
 
@@ -16,7 +22,7 @@ export default function BalanceCard({ query }: { query: UseQueryResult<Dashboard
 
   return (
     <section className="mb-6 rounded-2xl bg-slate-800 p-5">
-      <p className="text-sm text-slate-400">Saldo total</p>
+      <p className="text-sm text-slate-400">{balanceLabel}</p>
       <p className="mb-4 text-3xl font-bold text-white">{brl(d.totalBalance)}</p>
 
       <div className="grid grid-cols-2 gap-3">

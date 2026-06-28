@@ -14,7 +14,7 @@ App de controle de gastos da vida + previsão de meses futuros + projeção de i
 ## Modelo de domínio
 - **Account** (módulo Accounts): conta onde o dinheiro mora; guarda saldo de abertura. Saldo atual = abertura + (entradas − saídas).
 - **Category** (módulo Transactions): Receita ou Despesa.
-- **Transaction** (módulo Transactions): receita/despesa via `CreateIncomeOrExpense`; transferência via `CreateTransferPair` (duas pernas ligadas por `TransferGroupId`, salvas na mesma transação SQL). `Amount` sempre positivo + `Direction` (Inflow/Outflow). `OccurredOn` é `DateOnly`. Soft delete.
+- **Transaction** (módulo Transactions): receita/despesa via `CreateIncomeOrExpense`; transferência via `CreateTransferPair` (duas pernas ligadas por `TransferGroupId`); compra parcelada via `CreateInstallmentPurchase` (N despesas mensais ligadas por `InstallmentGroupId` + `InstallmentNumber`/`InstallmentCount`), todas salvas na mesma transação SQL. `Amount` sempre positivo + `Direction` (Inflow/Outflow). `OccurredOn` é `DateOnly`. Soft delete. Ver [compras-parceladas.md](compras-parceladas.md).
 - Eventos: `TransactionCreatedDomainEvent` (publicado após o commit).
 
 ## Fluxo data-driven (Kafka — Fase 2)
@@ -59,15 +59,29 @@ MVP ~2 meses · com previsão ~6–7 meses · tudo ~10–12 meses. A 20h/semana,
 - 🤖 Pôr chave Anthropic com crédito pra ativar a aba "IA".
 - 🔀 Merge `feat/cloud-deploy` → `main` e reapontar o Render pra `main`.
 
-### Fase 1 — itens pendentes (após deploy)
+### Fase 1.5 — Entregue (2026-06-22)
+
+> Detalhe em [compras-parceladas.md](compras-parceladas.md).
+
+| Entrega | Status |
+|---|---|
+| Compras parceladas (N despesas mensais, `InstallmentGroupId`, valor da parcela × nº) | ✅ |
+| Saldo realizado×agendado + saldo previsto na navegação por mês | ✅ |
+| Card "Comprometido (próximos meses)" + endpoint `/commitments` | ✅ |
+| Navegação por mês na Home (`MonthSelector`) | ✅ |
+| Aba Transações lista as últimas de todos os meses (corrige/edita lançamentos) | ✅ |
+| Editar/excluir transação (PUT/DELETE soft delete) | ✅ |
+| 9 testes unitários do domínio (factory de parcelamento) | ✅ |
+
+### Fase 1 — itens pendentes
 
 | Prioridade | Entrega | Status |
 |---|---|---|
+| ✅ — | Conta principal escolhível (`IsPrimary` + `POST /accounts/{id}/primary` + estrela; form/IA caem na principal) | feito (2026-06-26) |
+| 🔵 — | Tela de Análise: gastos por categoria + insights (branch `feat/insights-categorias`) | em andamento |
 | 🔴 1 | Saldo atual por conta no dashboard (abertura + entradas − saídas por conta) | pendente |
-| 🔴 2 | Editar transação (valor, categoria, descrição) | pendente |
-| 🔴 3 | Excluir transação — endpoint de soft delete | pendente |
-| 🟡 4 | Endpoint de transferência entre contas (`CreateTransferPair`) | pendente |
-| 🟢 5 | Testes unitários do domínio (aprendizado, não urgente) | pendente |
+| 🟡 3 | Endpoint de transferência entre contas (`CreateTransferPair`) | pendente |
+| 🟡 4 | Chat IA: crédito na conta Anthropic (+ rotacionar chave) | pendente |
 
 **Adiado/descartado:**
 - Autenticação JWT — `ApiKeyMiddleware` é suficiente por ora para uso pessoal.

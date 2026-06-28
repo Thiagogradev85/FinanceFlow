@@ -3,6 +3,7 @@ using System;
 using FinanceFlow.Modules.Transactions.Infrastructure;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace FinanceFlow.Modules.Transactions.Infrastructure.Persistence.Migrations
 {
     [DbContext(typeof(TransactionsDbContext))]
-    partial class TransactionsDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260622134421_AddInstallments")]
+    partial class AddInstallments
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
