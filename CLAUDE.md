@@ -21,6 +21,16 @@ Fluxo: `feat/<nome>` → *(homologação se necessário)* → `main`
 4. **Perguntar antes de apagar branch** — nunca apagar sem aprovação explícita.
 5. **Homologação opcional** — para features grandes/arriscadas, criar `homolog/<nome>` antes de ir pra `main`.
 
+## Checklist obrigatório antes de qualquer commit / push / merge
+
+Antes de executar `git commit`, `git push` ou `git merge`, **sempre**:
+
+1. **Verificar a branch atual** — confirmar que está na branch correta (nunca commitar direto na `main`).
+2. **Mostrar as mudanças ao Thiago** — listar os arquivos alterados e o diff resumido.
+3. **Propor a mensagem de commit** — sugerir a mensagem e aguardar aprovação (sim/não).
+4. **Só executar após "pode" ou "sim"** — na dúvida, perguntar. Nunca assumir autorização implícita.
+5. **Push e merge seguem a mesma regra** — nunca fazer push ou merge sem aprovação explícita para aquela ação específica.
+
 ## O que é
 Controle de gastos + previsão financeira. Mobile-first PWA. Stack de aprendizado: .NET 10 + React/TS + Kafka, data-driven. Dev local (Docker); produção em nuvem (serviço único no Render: API + front estático, + Neon).
 
