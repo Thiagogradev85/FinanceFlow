@@ -1,0 +1,78 @@
+# FinanceFlow — Azure Pipelines
+# Roda em push/PR para hml e main.
+# Valida: build .NET 10 + testes + build frontend (Vite) + build Docker.
+# Deploy fica com o Render (auto-deploy de main via GitHub webhook).
+
+trigger:
+  branches:
+    include:
+      - hml
+      - main
+
+pr:
+  branches:
+    include:
+      - hml
+      - main
+
+pool:
+  vmImage: 'ubuntu-latest'
+
+variables:
+  buildConfiguration: 'Release'
+
+stages:
+  - stage: CI
+    displayName: 'Build & Test'
+    jobs:
+      - job: Build
+        displayName: '.NET 10 + Vite + Docker'
+        steps:
+
+          # ── .NET 10 ────────────────────────────────────────────
+          - task: UseDotNet@2
+            displayName: 'Instalar .NET 10'
+            inputs:
+              version: '10.x'
+
+          - task: DotNetCoreCLI@2
+            displayName: 'Restore NuGet'
+            inputs:
+              command: 'restore'
+              projects: 'FinanceFlow.slnx'
+
+          - task: DotNetCoreCLI@2
+            displayName: 'Build'
+            inputs:
+              command: 'build'
+              projects: 'FinanceFlow.slnx'
+              arguments: '--configuration $(buildConfiguration) --no-restore'
+
+          - task: DotNetCoreCLI@2
+            displayName: 'Testes'
+            inputs:
+              command: 'test'
+              projects: 'FinanceFlow.slnx'
+              arguments: '--configuration $(buildConfiguration) --no-build --logger trx'
+              publishTestResults: true
+
+          # ── Frontend (Vite + React) ────────────────────────────
+          - task: UseNode@1
+            displayName: 'Instalar Node.js 20'
+            inputs:
+              version: '20.x'
+
+          - script: npm ci --prefix frontend
+            displayName: 'Frontend: npm ci'
+
+          - script: npm run build --prefix frontend
+            displayName: 'Frontend: vite build'
+
+          # ── Docker (validação — sem push) ──────────────────────
+          - task: Docker@2
+            displayName: 'Docker build (validação)'
+            inputs:
+              command: 'build'
+              Dockerfile: 'src/FinanceFlow.Api/Dockerfile'
+              buildContext: '.'
+              tags: 'financeflow:$(Build.BuildId)'
