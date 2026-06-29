@@ -65,3 +65,17 @@ export interface TransactionProposal {
   occurredOn: string; // "YYYY-MM-DD"
   description: string;
 }
+
+// ─────────────────────── Análise ───────────────────────────
+export type InsightList = string[];
+
+export interface CategoryBreakdownItem {
+  categoryId: string;
+  categoryName: string;
+  color: string;         // hex: "#f97316"
+  icon: string;          // emoji: "🍔"
+  total: number;
+  percentOfExpense: number; // 0-100
+}
+
+export type CategoryBreakdown = CategoryBreakdownItem[];

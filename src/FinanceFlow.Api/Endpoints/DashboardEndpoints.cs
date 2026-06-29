@@ -51,5 +51,17 @@ public static class DashboardEndpoints
             var result = await sender.Send(new GetCategoryBreakdownQuery(DemoUser.Id, y, m), ct);
             return result.ToHttp();
         }).WithTags("Dashboard");
+
+        app.MapGet("/api/insights", async (
+            int? year, int? month,
+            IClock clock, ISender sender, CancellationToken ct) =>
+        {
+            var now = clock.UtcNow;
+            var y = year ?? now.Year;
+            var m = month ?? now.Month;
+
+            var result = await sender.Send(new GetInsightsQuery(DemoUser.Id, y, m), ct);
+            return result.ToHttp();
+        }).WithTags("Insights");
     }
 }

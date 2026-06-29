@@ -1,6 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import api from "./api";
-import type { AccountDto, CategoryDto, DashboardDto, TransactionDto, UpcomingCommitmentsDto } from "./types";
+import type { AccountDto, CategoryBreakdown, CategoryDto, DashboardDto, InsightList, TransactionDto, UpcomingCommitmentsDto } from "./types";
 
 // ───────────────────────── Queries ─────────────────────────
 const ALWAYS = { refetchOnMount: "always" as const };
@@ -10,6 +10,28 @@ export const useDashboard = (year?: number, month?: number) =>
     queryKey: ["dashboard", year ?? null, month ?? null],
     queryFn: async () => (await api.get<DashboardDto>("/dashboard", { params: { year, month } })).data,
     ...ALWAYS,
+  });
+
+export const useCategoryBreakdown = (year: number, month: number) =>
+  useQuery({
+    queryKey: ["breakdown", year, month],
+    queryFn: async () =>
+      (await api.get<CategoryBreakdown>("/dashboard/breakdown", { params: { year, month } })).data,
+    ...ALWAYS,
+  });
+
+export const useInsights = (year: number, month: number) =>
+  useQuery({
+    queryKey: ["insights", year, month],
+    queryFn: async () =>
+      (await api.get<InsightList>("/insights", { params: { year, month } })).data,
+    ...ALWAYS,
+  });
+
+export const useAnalyzeInsights = () =>
+  useMutation({
+    mutationFn: async ({ year, month }: { year: number; month: number }) =>
+      (await api.post<string>("/insights/analyze", { year, month })).data,
   });
 
 export const useAccounts = () =>
