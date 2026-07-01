@@ -9,6 +9,13 @@ export interface AccountDto {
   isPrimary: boolean;
 }
 
+export interface AccountBalanceDto {
+  accountId: string;
+  openingBalance: number;
+  transactionsNet: number;
+  balance: number;
+}
+
 export interface CategoryDto {
   id: string;
   name: string;

@@ -1,6 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import api from "./api";
-import type { AccountDto, CategoryBreakdown, CategoryDto, DashboardDto, InsightList, TransactionDto, UpcomingCommitmentsDto } from "./types";
+import type { AccountBalanceDto, AccountDto, CategoryBreakdown, CategoryDto, DashboardDto, InsightList, TransactionDto, UpcomingCommitmentsDto } from "./types";
 
 // ───────────────────────── Queries ─────────────────────────
 const ALWAYS = { refetchOnMount: "always" as const };
@@ -37,6 +37,13 @@ export const useAnalyzeInsights = () =>
 export const useAccounts = () =>
   useQuery({ queryKey: ["accounts"], queryFn: async () => (await api.get<AccountDto[]>("/accounts")).data, ...ALWAYS });
 
+export const useAccountBalances = () =>
+  useQuery({
+    queryKey: ["account-balances"],
+    queryFn: async () => (await api.get<AccountBalanceDto[]>("/accounts/balances")).data,
+    ...ALWAYS,
+  });
+
 export const useCategories = () =>
   useQuery({ queryKey: ["categories"], queryFn: async () => (await api.get<CategoryDto[]>("/categories")).data, ...ALWAYS });
 
@@ -69,7 +76,7 @@ export const useCreateTransaction = () => {
   return useMutation({
     mutationFn: async (input: TransactionInput) =>
       (await api.post<TransactionDto>("/transactions", { currency: "BRL", ...input })).data,
-    onSuccess: () => invalidate(qc, ["transactions", "dashboard", "commitments"]),
+    onSuccess: () => invalidate(qc, ["transactions", "dashboard", "commitments", "account-balances"]),
   });
 };
 
@@ -78,7 +85,7 @@ export const useUpdateTransaction = () => {
   return useMutation({
     mutationFn: async ({ id, ...input }: TransactionInput & { id: string }) =>
       (await api.put<TransactionDto>(`/transactions/${id}`, { currency: "BRL", ...input })).data,
-    onSuccess: () => invalidate(qc, ["transactions", "dashboard", "commitments"]),
+    onSuccess: () => invalidate(qc, ["transactions", "dashboard", "commitments", "account-balances"]),
   });
 };
 
@@ -86,7 +93,7 @@ export const useDeleteTransaction = () => {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: async (id: string) => api.delete(`/transactions/${id}`),
-    onSuccess: () => invalidate(qc, ["transactions", "dashboard", "commitments"]),
+    onSuccess: () => invalidate(qc, ["transactions", "dashboard", "commitments", "account-balances"]),
   });
 };
 
@@ -104,7 +111,7 @@ export const useCreateInstallment = () => {
   return useMutation({
     mutationFn: async (input: InstallmentInput) =>
       (await api.post<TransactionDto[]>("/transactions/installment", { currency: "BRL", ...input })).data,
-    onSuccess: () => invalidate(qc, ["transactions", "dashboard", "commitments"]),
+    onSuccess: () => invalidate(qc, ["transactions", "dashboard", "commitments", "account-balances"]),
   });
 };
 

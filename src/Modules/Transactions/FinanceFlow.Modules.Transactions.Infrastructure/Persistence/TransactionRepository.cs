@@ -79,6 +79,25 @@ internal sealed class TransactionRepository(TransactionsDbContext db) : ITransac
         return inflow - outflow;
     }
 
+    public async Task<IReadOnlyDictionary<Guid, decimal>> GetAllTimeNetByAccountsAsync(
+        Guid userId, DateOnly asOf, CancellationToken ct = default)
+    {
+        // Uma query só, agrupada por conta — evita N+1 quando o chamador precisa do saldo
+        // de todas as contas do usuário (ex.: tela de Contas).
+        var rows = await db.Transactions
+            .Where(t => t.UserId == userId && t.OccurredOn <= asOf)
+            .GroupBy(t => t.AccountId)
+            .Select(g => new
+            {
+                AccountId = g.Key,
+                Inflow = g.Where(t => t.Direction == TransactionDirection.Inflow).Sum(t => t.Amount),
+                Outflow = g.Where(t => t.Direction == TransactionDirection.Outflow).Sum(t => t.Amount)
+            })
+            .ToListAsync(ct);
+
+        return rows.ToDictionary(r => r.AccountId, r => r.Inflow - r.Outflow);
+    }
+
     public async Task<IReadOnlyList<MonthCommitmentDto>> GetMonthlyCommittedInstallmentsAsync(
         Guid userId, DateOnly fromInclusive, DateOnly toExclusive, CancellationToken ct = default)
     {
