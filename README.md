@@ -140,6 +140,20 @@ Stack de produção: **Render** (serviço único via Docker, blueprint `render.y
 
 ---
 
+## CI/CD (Azure Pipelines)
+
+`azure-pipelines.yml` na raiz roda em push/PR para `hml` e `main`, em 3 stages sequenciais:
+
+| Stage | O que faz | Quando roda |
+|---|---|---|
+| **CI** | Build .NET 10 + testes (xUnit) + build Vite + build Docker | Todo push/PR em `hml`/`main` |
+| **Quality** | Análise SonarCloud (code smells, bugs, cobertura, duplicação) | Após `CI` passar. **Skeleton hoje**: builda e roda testes com coverage, mas os steps do SonarCloud ficam comentados até existir conta em sonarcloud.io + `SonarCloudToken` |
+| **Deploy** | Approval Gate manual (Environment `Production`) → aciona `RenderWebhook` | Só se `Quality` passou **e** a branch é `main` |
+
+O deploy pra produção não é mais automático só pelo push: passa por um **gate de aprovação humana** no Azure DevOps antes de acionar o Render. Pendências para ativar de ponta a ponta: conta SonarCloud + token, Environment `Production` com Approval Gate configurado, variável secreta `RenderWebhook`.
+
+---
+
 ## Endpoints (Fase 1)
 
 | Método | Rota | Descrição |
@@ -201,6 +215,9 @@ O projeto tem agentes configurados para **Claude Code** e **GitHub Copilot** no 
 | `guardiao-financeflow` | mencionado automaticamente | Revisa convenções DDD/SharedKernel/Result — somente leitura |
 | `arquiteto` | "usa o arquiteto" / "planeja com o arquiteto" | Plano + trade-offs antes de escrever código |
 | `revisor-pr` | "revisa o PR" / "passa o revisor" | Code review: segurança, legibilidade, testes |
+| `db-migration-reviewer` | antes de `dotnet ef database update` / nova migration | Detecta DROP destrutivo, lock de tabela, índice sem `CONCURRENTLY` — somente leitura |
+| `security-reviewer` | antes de PR para `hml`, endpoints novos, dados de usuário | OWASP Top 10: secrets, SQL injection, XSS, CORS — somente leitura |
+| `performance-advisor` | queries EF Core, listagens, listas grandes no React | N+1, await em loop, `AsNoTracking`, paginação, bundle — somente leitura |
 
 ### GitHub Copilot — `.github/agents/`
 | Agente | Como acionar | Papel |
@@ -209,6 +226,7 @@ O projeto tem agentes configurados para **Claude Code** e **GitHub Copilot** no 
 | `@guardiao` | Copilot Chat no VS Code | Revisor de convenções genérico |
 | `@arquiteto` | Copilot Chat no VS Code | Consultor de arquitetura |
 | `@revisor-pr` | Copilot Chat no VS Code | Revisor de PR |
+| `@performance-advisor` | Copilot Chat no VS Code | Consultor de performance N+1/queries/bundle |
 
 > Instruções gerais para o Copilot em `.github/copilot-instructions.md`. Instruções automáticas por tipo de arquivo em `.github/instructions/`.
 

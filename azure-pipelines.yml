@@ -1,7 +1,8 @@
 # FinanceFlow — Azure Pipelines
-# Roda em push/PR para hml e main.
-# Valida: build .NET 10 + testes + build frontend (Vite) + build Docker.
-# Deploy fica com o Render (auto-deploy de main via GitHub webhook).
+# Stages:
+#   CI      — build .NET 10 + testes + Vite + Docker (roda em todo push/PR)
+#   Quality — SonarCloud análise de qualidade (roda após CI)
+#   Deploy  — Approval Gate (TG) → Render webhook (só na branch main)
 
 trigger:
   branches:
@@ -20,6 +21,10 @@ pool:
 
 variables:
   buildConfiguration: 'Release'
+  # SonarCloud — ativar quando criar conta em sonarcloud.io
+  # SONAR_TOKEN: $(SonarCloudToken)      # variável secreta no Azure DevOps
+  # SONAR_ORG: 'thiagogra'               # nome da org no SonarCloud (= GitHub username)
+  # SONAR_PROJECT_KEY: 'financeflow'     # definir ao criar o projeto no SonarCloud
 
 stages:
   - stage: CI
@@ -76,3 +81,117 @@ stages:
               Dockerfile: 'src/FinanceFlow.Api/Dockerfile'
               buildContext: '.'
               tags: 'financeflow:$(Build.BuildId)'
+
+  # ══════════════════════════════════════════════════════════════
+  # STAGE 2: Quality — SonarCloud
+  # Analisa code smells, bugs, cobertura e duplicações.
+  # Skeleton ativo: roda mas pula a análise até o token ser configurado.
+  # Para ativar: criar conta em sonarcloud.io, descomentar as variáveis
+  # acima e os steps abaixo, e adicionar SonarCloudToken no Azure DevOps.
+  # ══════════════════════════════════════════════════════════════
+  - stage: Quality
+    displayName: 'Quality Gate'
+    dependsOn: CI
+    condition: succeeded()
+    jobs:
+      - job: CodeQuality
+        displayName: 'SonarCloud Analysis'
+        steps:
+          - task: UseDotNet@2
+            displayName: 'Instalar .NET 10'
+            inputs:
+              version: '10.x'
+
+          # ── SonarCloud (descomentarquando tiver conta e token) ──
+          # - task: SonarCloudPrepare@2
+          #   displayName: 'SonarCloud: preparar análise'
+          #   inputs:
+          #     SonarCloud: 'SonarCloud'           # service connection no Azure DevOps
+          #     organization: '$(SONAR_ORG)'
+          #     scannerMode: 'MSBuild'
+          #     projectKey: '$(SONAR_PROJECT_KEY)'
+          #     projectName: 'FinanceFlow'
+          #     extraProperties: |
+          #       sonar.exclusions=**/bin/**,**/obj/**,**/node_modules/**
+          #       sonar.coverage.exclusions=**/Program.cs,**/*Options.cs
+          #       sonar.javascript.lcov.reportPaths=frontend/coverage/lcov.info
+
+          - task: DotNetCoreCLI@2
+            displayName: 'Restore NuGet'
+            inputs:
+              command: 'restore'
+              projects: 'FinanceFlow.slnx'
+
+          - task: DotNetCoreCLI@2
+            displayName: 'Build (para análise)'
+            inputs:
+              command: 'build'
+              projects: 'FinanceFlow.slnx'
+              arguments: '--configuration $(buildConfiguration) --no-restore'
+
+          - task: DotNetCoreCLI@2
+            displayName: 'Testes com coverage'
+            inputs:
+              command: 'test'
+              projects: 'FinanceFlow.slnx'
+              arguments: >
+                --configuration $(buildConfiguration)
+                --no-build
+                --collect:"XPlat Code Coverage"
+                --logger trx
+              publishTestResults: true
+
+          # - task: SonarCloudAnalyze@2
+          #   displayName: 'SonarCloud: executar análise'
+
+          # - task: SonarCloudPublish@2
+          #   displayName: 'SonarCloud: publicar Quality Gate'
+          #   inputs:
+          #     pollingTimeoutSec: '300'
+
+          - script: echo "Quality stage concluído. SonarCloud pendente de configuração."
+            displayName: 'Status Quality Gate'
+
+  # ══════════════════════════════════════════════════════════════
+  # STAGE 3: Deploy — Approval Gate → Render
+  # Só roda quando: Quality passou E branch é main.
+  # O deployment job vincula ao Environment "Production" que tem
+  # Approval Gate configurado (TG, timeout 7d).
+  # Variável secreta necessária: RenderWebhook (URL do Deploy Hook do Render).
+  # ══════════════════════════════════════════════════════════════
+  - stage: Deploy
+    displayName: 'Deploy → Render (Produção)'
+    dependsOn: Quality
+    condition: |
+      and(
+        succeeded(),
+        eq(variables['Build.SourceBranch'], 'refs/heads/main')
+      )
+    jobs:
+      - deployment: DeployToProduction
+        displayName: 'Deploy para Produção (Render)'
+        environment: Production
+        strategy:
+          runOnce:
+            deploy:
+              steps:
+                - checkout: none
+
+                - script: |
+                    echo "Branch: $(Build.SourceBranch)"
+                    echo "Commit: $(Build.SourceVersion)"
+                    echo "Build:  $(Build.BuildNumber)"
+                  displayName: 'Info do deploy'
+
+                - script: |
+                    curl -fsSL -X POST "$(RenderWebhook)" \
+                      -H "Content-Type: application/json" \
+                      || (echo "Falha ao acionar webhook do Render" && exit 1)
+                  displayName: 'Acionar Render Deploy Webhook'
+                  env:
+                    RenderWebhook: $(RenderWebhook)
+
+                - script: |
+                    echo "Deploy acionado com sucesso."
+                    echo "Acompanhe em: https://dashboard.render.com"
+                  displayName: 'Deploy acionado'
