@@ -39,6 +39,14 @@ public static class TransactionsEndpoints
         string Description,
         string Currency = "BRL");
 
+    public sealed record CreateTransferRequest(
+        Guid FromAccountId,
+        Guid ToAccountId,
+        decimal Amount,
+        DateOnly OccurredOn,
+        string Description,
+        string Currency = "BRL");
+
     public static void MapTransactionsEndpoints(this IEndpointRouteBuilder app)
     {
         var categories = app.MapGroup("/api/categories").WithTags("Categories");
@@ -73,6 +81,12 @@ public static class TransactionsEndpoints
             (await sender.Send(new CreateInstallmentPurchaseCommand(
                 DemoUser.Id, req.AccountId, req.CategoryId,
                 req.InstallmentAmount, req.InstallmentCount, req.FirstOccurredOn, req.Description, req.Currency), ct)).ToHttp());
+
+        // Transferência entre contas: cria as duas pernas (débito/crédito) ligadas por TransferGroupId.
+        transactions.MapPost("/transfer", async (CreateTransferRequest req, ISender sender, CancellationToken ct) =>
+            (await sender.Send(new CreateTransferCommand(
+                DemoUser.Id, req.FromAccountId, req.ToAccountId,
+                req.Amount, req.OccurredOn, req.Description, req.Currency), ct)).ToHttp());
 
         // "Comprometido": total parcelado já agendado para os próximos meses.
         transactions.MapGet("/commitments", async (int? months, ISender sender, CancellationToken ct) =>
