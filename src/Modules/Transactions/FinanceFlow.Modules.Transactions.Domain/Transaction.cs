@@ -125,6 +125,11 @@ public sealed class Transaction : AggregateRoot
             UpdatedAtUtc = now
         };
 
+        outLeg.Raise(new TransactionCreatedDomainEvent(
+            outLeg.Id, userId, fromAccountId, outLeg.Direction, amount, currency, occurredOn));
+        inLeg.Raise(new TransactionCreatedDomainEvent(
+            inLeg.Id, userId, toAccountId, inLeg.Direction, amount, currency, occurredOn));
+
         return (outLeg, inLeg);
     }
 
