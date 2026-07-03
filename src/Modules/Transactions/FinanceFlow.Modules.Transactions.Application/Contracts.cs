@@ -29,3 +29,12 @@ public sealed record TransactionsSummaryDto(
 public sealed record MonthCommitmentDto(int Year, int Month, decimal Amount);
 
 public sealed record UpcomingCommitmentsDto(decimal Total, IReadOnlyList<MonthCommitmentDto> Months);
+
+// Dados brutos vindos do banco para o breakdown de categorias.
+// O PercentOfExpense é calculado no handler, não aqui — é regra de apresentação, não de persistência.
+public sealed record CategoryBreakdownRawDto(
+    Guid CategoryId,
+    string CategoryName,
+    string Color,
+    string Icon,
+    decimal Total);

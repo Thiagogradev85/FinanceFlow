@@ -1,3 +1,4 @@
+using System.Globalization;
 using System.Text.Json;
 using Anthropic;
 using Anthropic.Models.Messages;
@@ -17,6 +18,8 @@ public sealed class ClaudeFinancialAssistant(
     IClock clock,
     ILogger<ClaudeFinancialAssistant> logger) : IFinancialAssistant
 {
+    private static readonly CultureInfo PtBr = CultureInfo.GetCultureInfo("pt-BR");
+    private static string Brl(decimal v) => v.ToString("C", PtBr);
     private const string ToolName = "registrar_proposta";
 
     public async Task<Result<AssistantReply>> InterpretAsync(string message, Guid userId, CancellationToken ct)
@@ -53,6 +56,51 @@ public sealed class ClaudeFinancialAssistant(
         }
 
         return AssistantProposalFactory.Build(parsed, ctx, clock);
+    }
+
+    public async Task<Result<string>> AnalyzeAsync(FinancialAnalysisInput input, CancellationToken ct)
+    {
+        var catLines = input.Breakdown.Count > 0
+            ? string.Join("\n", input.Breakdown.Select(c =>
+                $"  - {c.Name}: {Brl(c.Total)} ({c.PercentOfExpense:F1}%)"))
+            : "  (nenhuma despesa registrada)";
+
+        var userPrompt = $"""
+            Mês {input.Month:00}/{input.Year}:
+            - Receita: {Brl(input.Income)}
+            - Gasto: {Brl(input.Expense)}
+            - Saldo do mês: {Brl(input.Net)}
+            Categorias de gasto:
+            {catLines}
+            """;
+
+        try
+        {
+            var response = await client.Messages.Create(new MessageCreateParams
+            {
+                Model = Model.ClaudeOpus4_8,
+                MaxTokens = 300,
+                System = new List<TextBlockParam>
+                {
+                    new() { Text = "Você é um consultor financeiro pessoal. Em 2-3 frases diretas em pt-BR, analise os dados e dê um conselho prático. Não repita os números — foque no que o usuário pode melhorar ou parabenize se estiver bem." }
+                },
+                Messages = [new() { Role = Role.User, Content = userPrompt }],
+            });
+
+            string? narrative = null;
+            foreach (var block in response.Content)
+                if (block.TryPickText(out var tb)) { narrative = tb.Text; break; }
+
+            return narrative is not null
+                ? Result<string>.Success(narrative)
+                : AppError.Domain("assistant.no_narrative", "A IA não retornou uma análise. Tente novamente.");
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Falha ao gerar análise com Claude");
+            return AppError.Domain("assistant.llm_error",
+                "Não foi possível gerar a análise agora. Verifique o saldo da conta Anthropic e tente de novo.");
+        }
     }
 
     private MessageCreateParams BuildRequest(string message, IReadOnlyList<CategoryDto> categories)

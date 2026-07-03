@@ -3,6 +3,7 @@ import { Plus } from "lucide-react";
 import { useDashboard } from "./lib/hooks";
 import type { TransactionDto } from "./lib/types";
 import BalanceCard from "./components/BalanceCard";
+import AccountBalancesCard from "./components/AccountBalancesCard";
 import CommitmentsCard from "./components/CommitmentsCard";
 import MonthSelector, { thisMonth, type RefMonth } from "./components/MonthSelector";
 import TransactionList from "./components/TransactionList";
@@ -10,6 +11,7 @@ import TransactionForm from "./components/TransactionForm";
 import CategoriesScreen from "./components/CategoriesScreen";
 import AccountsScreen from "./components/AccountsScreen";
 import ChatScreen from "./components/ChatScreen";
+import AnalysisScreen from "./components/AnalysisScreen";
 import BottomNav, { type Tab } from "./components/BottomNav";
 
 export default function App() {
@@ -37,6 +39,7 @@ export default function App() {
           </header>
           <MonthSelector value={refMonth} onChange={setRefMonth} />
           <BalanceCard query={dashboard} balanceLabel={balanceLabel} />
+          <AccountBalancesCard />
           <CommitmentsCard />
           <h2 className="mb-2 text-sm font-semibold text-slate-300">Transações do mês</h2>
           <TransactionList onSelect={openEdit} year={refMonth.year} month={refMonth.month} />
@@ -50,6 +53,7 @@ export default function App() {
         </>
       )}
 
+      {tab === "analysis" && <AnalysisScreen />}
       {tab === "chat" && <ChatScreen />}
       {tab === "categories" && <CategoriesScreen />}
       {tab === "accounts" && <AccountsScreen />}

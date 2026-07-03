@@ -19,7 +19,15 @@ public interface ITransactionRepository : IRepository<Transaction>
     // ficam de fora do saldo atual — entram como "comprometido" nos meses seguintes.
     Task<decimal> GetAllTimeNetAsync(Guid userId, DateOnly asOf, CancellationToken ct = default);
 
+    // Igual ao GetAllTimeNetAsync, mas agrupado por conta numa query só (evita N+1 ao
+    // calcular o saldo de todas as contas do usuário de uma vez).
+    Task<IReadOnlyDictionary<Guid, decimal>> GetAllTimeNetByAccountsAsync(Guid userId, DateOnly asOf, CancellationToken ct = default);
+
     // Total parcelado comprometido por mês, no intervalo [fromInclusive, toExclusive).
     Task<IReadOnlyList<MonthCommitmentDto>> GetMonthlyCommittedInstallmentsAsync(
         Guid userId, DateOnly fromInclusive, DateOnly toExclusive, CancellationToken ct = default);
+
+    // Gastos do mês agrupados por categoria (somente Outflow, sem Transfer).
+    Task<IReadOnlyList<CategoryBreakdownRawDto>> GetCategoryBreakdownAsync(
+        Guid userId, int year, int month, CancellationToken ct = default);
 }

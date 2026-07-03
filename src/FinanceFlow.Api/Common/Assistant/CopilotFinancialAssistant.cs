@@ -1,4 +1,5 @@
 using System.ComponentModel;
+using System.Globalization;
 using FinanceFlow.SharedKernel;
 using GitHub.Copilot.SDK;
 using MediatR;
@@ -17,6 +18,60 @@ public sealed class CopilotFinancialAssistant(
     IClock clock,
     ILogger<CopilotFinancialAssistant> logger) : IFinancialAssistant
 {
+    private static readonly CultureInfo PtBr = CultureInfo.GetCultureInfo("pt-BR");
+    private static string Brl(decimal v) => v.ToString("C", PtBr);
+
+    public async Task<Result<string>> AnalyzeAsync(FinancialAnalysisInput input, CancellationToken ct)
+    {
+        var catLines = input.Breakdown.Count > 0
+            ? string.Join("\n", input.Breakdown.Select(c =>
+                $"  - {c.Name}: {Brl(c.Total)} ({c.PercentOfExpense:F1}%)"))
+            : "  (nenhuma despesa registrada)";
+
+        string? captured = null;
+
+        [Description("Entrega a análise financeira do mês ao usuário.")]
+        string EntregarAnalise(
+            [Description("Análise em 2-3 frases diretas em pt-BR com conselho prático.")] string analise)
+        {
+            captured = analise;
+            return "ok";
+        }
+
+        const string system = "Você é um consultor financeiro pessoal. Analise os dados e chame EntregarAnalise com 2-3 frases diretas em pt-BR. Não repita os números — foque em conselhos práticos.";
+
+        var prompt = $"""
+            Mês {input.Month:00}/{input.Year}:
+            - Receita: {Brl(input.Income)}
+            - Gasto: {Brl(input.Expense)}
+            - Saldo do mês: {Brl(input.Net)}
+            Categorias de gasto:
+            {catLines}
+            """;
+
+        try
+        {
+            await using var session = await client.CreateSessionAsync(new SessionConfig
+            {
+                OnPermissionRequest = PermissionHandler.ApproveAll,
+                SystemMessage = new SystemMessageConfig { Content = system },
+                Tools = [AIFunctionFactory.Create(EntregarAnalise)],
+            }, ct);
+
+            await session.SendAndWaitAsync(new MessageOptions { Prompt = prompt });
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Falha ao gerar análise com Copilot");
+            return AppError.Domain("assistant.llm_error",
+                "Não foi possível gerar a análise agora. Verifique se o Copilot CLI está instalado e logado.");
+        }
+
+        return captured is not null
+            ? Result<string>.Success(captured)
+            : AppError.Domain("assistant.no_narrative", "A IA não retornou uma análise. Tente novamente.");
+    }
+
     public async Task<Result<AssistantReply>> InterpretAsync(string message, Guid userId, CancellationToken ct)
     {
         var ctxResult = await AssistantProposalFactory.LoadContextAsync(sender, userId, ct);

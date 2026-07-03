@@ -9,6 +9,28 @@ A doc rica vive no **vault Obsidian** deste projeto: `C:\Users\thiag\Documents\O
 - **Ao concluir uma mudança importante**, proativamente e sem esperar o fim da sessão, manter sincronizados: o **vault** (`Estado Atual` → "Sessões recentes"; `Próximos Passos`; e `Decisões Estratégicas` se houve decisão), o **README**/docs quando o que mudou afeta o leitor, e **sugerir um commit** (mensagem pronta) — esperando a aprovação do Thiago (sim/não) antes de commitar.
 - Datas no vault: usar a data real (absoluta), nunca relativa.
 
+## Fluxo de branch + deploy (obrigatório)
+
+**`main` = produção.** Render aponta sempre pra `main`. Nunca mergear sem autorização do Thiago.
+
+Fluxo: `feat/<nome>` → *(homologação se necessário)* → `main`
+
+1. **Toda feature numa branch própria** (`feat/<nome>`) a partir da `main`.
+2. **Push no fim de cada sessão** — mesmo que incompleta, para não ficar só local.
+3. **Merge na `main` só com autorização** — perguntar antes. Fazer ff quando possível.
+4. **Perguntar antes de apagar branch** — nunca apagar sem aprovação explícita.
+5. **Homologação opcional** — para features grandes/arriscadas, criar `homolog/<nome>` antes de ir pra `main`.
+
+## Checklist obrigatório antes de qualquer commit / push / merge
+
+Antes de executar `git commit`, `git push` ou `git merge`, **sempre**:
+
+1. **Verificar a branch atual** — confirmar que está na branch correta (nunca commitar direto na `main`).
+2. **Mostrar as mudanças ao Thiago** — listar os arquivos alterados e o diff resumido.
+3. **Propor a mensagem de commit** — sugerir a mensagem e aguardar aprovação (sim/não).
+4. **Só executar após "pode" ou "sim"** — na dúvida, perguntar. Nunca assumir autorização implícita.
+5. **Push e merge seguem a mesma regra** — nunca fazer push ou merge sem aprovação explícita para aquela ação específica.
+
 ## O que é
 Controle de gastos + previsão financeira. Mobile-first PWA. Stack de aprendizado: .NET 10 + React/TS + Kafka, data-driven. Dev local (Docker); produção em nuvem (serviço único no Render: API + front estático, + Neon).
 
