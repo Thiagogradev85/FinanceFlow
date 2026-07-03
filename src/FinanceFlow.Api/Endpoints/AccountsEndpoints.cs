@@ -4,6 +4,7 @@ using FinanceFlow.Modules.Accounts.Domain;
 using FinanceFlow.Modules.Transactions.Application.Categories;
 using FinanceFlow.Modules.Transactions.Application.Transactions;
 using FinanceFlow.Modules.Transactions.Domain;
+using FinanceFlow.SharedKernel;
 using MediatR;
 
 namespace FinanceFlow.Api.Endpoints;
@@ -12,6 +13,7 @@ public static class AccountsEndpoints
 {
     public sealed record CreateAccountRequest(string Name, AccountType Type, string Currency = "BRL", decimal OpeningBalance = 0);
     public sealed record UpdateAccountRequest(string Name, decimal OpeningBalance);
+    public sealed record AccountBalanceDto(Guid AccountId, decimal OpeningBalance, decimal TransactionsNet, decimal Balance);
 
     public static void MapAccountsEndpoints(this IEndpointRouteBuilder app)
     {
@@ -19,6 +21,30 @@ public static class AccountsEndpoints
 
         group.MapGet("/", async (ISender sender, CancellationToken ct) =>
             (await sender.Send(new ListAccountsQuery(DemoUser.Id), ct)).ToHttp());
+
+        // Compõe dois módulos no nível da API (Accounts + Transactions) — mesmo padrão do
+        // DashboardEndpoints: nenhum módulo chama o outro diretamente. Uma query batida em
+        // lote (não uma por conta) para não virar N+1 quando o usuário tem várias contas.
+        group.MapGet("/balances", async (IClock clock, ISender sender, CancellationToken ct) =>
+        {
+            var accountsResult = await sender.Send(new ListAccountsQuery(DemoUser.Id), ct);
+            if (accountsResult.IsFailure) return accountsResult.ToHttp();
+
+            var asOf = DateOnly.FromDateTime(clock.UtcNow);
+            var netsResult = await sender.Send(new GetAccountsNetQuery(DemoUser.Id, asOf), ct);
+            if (netsResult.IsFailure) return netsResult.ToHttp();
+
+            var nets = netsResult.Value!;
+            var dtos = accountsResult.Value!
+                .Select(a =>
+                {
+                    var net = nets.GetValueOrDefault(a.Id);
+                    return new AccountBalanceDto(a.Id, a.OpeningBalance, net, a.OpeningBalance + net);
+                })
+                .ToList();
+
+            return Results.Ok(dtos);
+        });
 
         group.MapPost("/", async (CreateAccountRequest req, ISender sender, CancellationToken ct) =>
         {
