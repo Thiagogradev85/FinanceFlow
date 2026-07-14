@@ -28,23 +28,35 @@ export default function TransactionList({
 
       {items?.map((t) => {
         const isIncome = t.direction === 1;
+        const isCarryForward = t.isCarryForward === true;
         return (
           <button
-            key={t.id}
-            onClick={() => onSelect?.(t)}
-            disabled={!onSelect}
-            className="flex w-full items-center justify-between rounded-xl bg-slate-800 p-3 text-left disabled:cursor-default"
+            key={isCarryForward ? `carry-${t.occurredOn}` : t.id}
+            onClick={isCarryForward ? undefined : () => onSelect?.(t)}
+            disabled={!onSelect || isCarryForward}
+            className={`flex w-full items-center justify-between rounded-xl p-3 text-left disabled:cursor-default ${
+              isCarryForward
+                ? "border border-slate-600/40 bg-slate-700/50"
+                : "bg-slate-800"
+            }`}
           >
             <div>
-              <p className="flex items-center gap-2 text-sm text-white">
+              <p className={`flex items-center gap-2 text-sm ${isCarryForward ? "italic text-slate-400" : "text-white"}`}>
                 <span>{t.description || categoryName(t.categoryId)}</span>
-                {t.installmentCount && (
+                {isCarryForward && (
+                  <span className="rounded-full bg-slate-600/40 px-2 py-0.5 text-[10px] font-medium text-slate-400">
+                    ↩ anterior
+                  </span>
+                )}
+                {!isCarryForward && t.installmentCount && (
                   <span className="rounded-full bg-indigo-500/20 px-2 py-0.5 text-[10px] font-medium text-indigo-300">
                     {t.installmentNumber}/{t.installmentCount}
                   </span>
                 )}
               </p>
-              <p className="text-xs text-slate-500">{categoryName(t.categoryId)} · {shortDate(t.occurredOn)}</p>
+              <p className="text-xs text-slate-500">
+                {isCarryForward ? shortDate(t.occurredOn) : `${categoryName(t.categoryId)} · ${shortDate(t.occurredOn)}`}
+              </p>
             </div>
             <span className={isIncome ? "font-semibold text-emerald-400" : "font-semibold text-rose-400"}>
               {isIncome ? "+ " : "− "}{brl(t.amount)}

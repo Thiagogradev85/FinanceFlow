@@ -15,7 +15,8 @@ public sealed record TransactionDto(
     string Description,
     Guid? InstallmentGroupId = null,
     int? InstallmentNumber = null,
-    int? InstallmentCount = null);
+    int? InstallmentCount = null,
+    bool IsCarryForward = false);
 
 public sealed record TransactionsSummaryDto(
     int Year,
