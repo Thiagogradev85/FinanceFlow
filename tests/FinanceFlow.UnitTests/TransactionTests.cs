@@ -78,6 +78,21 @@ public class TransactionTests
     }
 
     [Fact]
+    public void CreateTransferPair_Valid_RaisesTransactionCreatedEventOnBothLegs()
+    {
+        var to = Guid.NewGuid();
+
+        var result = Transaction.CreateTransferPair(
+            User, Account, to, 250m, "BRL", Today, "Transferência");
+
+        var (outLeg, inLeg) = result.Value;
+        Assert.Single(outLeg.DomainEvents);
+        Assert.IsType<TransactionCreatedDomainEvent>(outLeg.DomainEvents.First());
+        Assert.Single(inLeg.DomainEvents);
+        Assert.IsType<TransactionCreatedDomainEvent>(inLeg.DomainEvents.First());
+    }
+
+    [Fact]
     public void CreateInstallmentPurchase_WithLessThanTwoInstallments_ReturnsFailure()
     {
         var result = Transaction.CreateInstallmentPurchase(
