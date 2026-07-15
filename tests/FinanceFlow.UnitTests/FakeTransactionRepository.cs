@@ -25,7 +25,12 @@ public sealed class FakeTransactionRepository(IEnumerable<Transaction> transacti
     }
 
     public Task<decimal> GetAllTimeNetAsync(Guid userId, DateOnly asOf, CancellationToken ct = default)
-        => throw new NotImplementedException();
+    {
+        var realized = _transactions.Where(t => t.UserId == userId && !t.IsDeleted && t.OccurredOn <= asOf);
+        var inflow = realized.Where(t => t.Direction == TransactionDirection.Inflow).Sum(t => t.Amount);
+        var outflow = realized.Where(t => t.Direction == TransactionDirection.Outflow).Sum(t => t.Amount);
+        return Task.FromResult(inflow - outflow);
+    }
 
     public Task<(decimal income, decimal expense)> GetMonthTotalsAsync(Guid userId, int year, int month, CancellationToken ct = default)
         => throw new NotImplementedException();
@@ -37,10 +42,25 @@ public sealed class FakeTransactionRepository(IEnumerable<Transaction> transacti
         => throw new NotImplementedException();
 
     public Task<IReadOnlyList<Transaction>> ListByUserAndMonthAsync(Guid userId, int year, int month, CancellationToken ct = default)
-        => throw new NotImplementedException();
+    {
+        var start = new DateOnly(year, month, 1);
+        var end = start.AddMonths(1);
+        IReadOnlyList<Transaction> result = _transactions
+            .Where(t => t.UserId == userId && !t.IsDeleted && t.OccurredOn >= start && t.OccurredOn < end)
+            .OrderByDescending(t => t.OccurredOn)
+            .ToList();
+        return Task.FromResult(result);
+    }
 
     public Task<IReadOnlyList<Transaction>> ListRecentByUserAsync(Guid userId, int take, CancellationToken ct = default)
-        => throw new NotImplementedException();
+    {
+        IReadOnlyList<Transaction> result = _transactions
+            .Where(t => t.UserId == userId && !t.IsDeleted)
+            .OrderByDescending(t => t.OccurredOn)
+            .Take(take)
+            .ToList();
+        return Task.FromResult(result);
+    }
 
     public Task AddRangeAsync(IEnumerable<Transaction> transactions, CancellationToken ct = default)
         => throw new NotImplementedException();
