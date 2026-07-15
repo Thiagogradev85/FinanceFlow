@@ -115,6 +115,23 @@ export const useCreateInstallment = () => {
   });
 };
 
+export interface TransferInput {
+  fromAccountId: string;
+  toAccountId: string;
+  amount: number;
+  occurredOn: string;
+  description: string;
+}
+
+export const useCreateTransfer = () => {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (input: TransferInput) =>
+      (await api.post<TransactionDto[]>("/transactions/transfer", { currency: "BRL", ...input })).data,
+    onSuccess: () => invalidate(qc, ["transactions", "dashboard", "commitments", "account-balances"]),
+  });
+};
+
 // ─────────────────────── Categorias ────────────────────────
 export interface CreateCategoryInput { name: string; kind: number; color: string; icon: string }
 export interface UpdateCategoryInput { id: string; name: string; color: string; icon: string }
