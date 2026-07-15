@@ -13,6 +13,12 @@ public sealed class GetTransactionsSummaryHandler(ITransactionRepository transac
     {
         var (income, expense) = await transactions.GetMonthTotalsAsync(query.UserId, query.Year, query.Month, ct);
 
+        var lastDayOfPrevMonth = new DateOnly(query.Year, query.Month, 1).AddDays(-1);
+        var prevNet = await transactions.GetAllTimeNetAsync(query.UserId, lastDayOfPrevMonth, ct);
+
+        if (prevNet > 0) income += prevNet;
+        else if (prevNet < 0) expense += Math.Abs(prevNet);
+
         // Saldo PREVISTO até o fim do mês de referência: net de tudo com OccurredOn <= último dia do mês.
         // Mês futuro → projeta o impacto das parcelas; mês corrente → equivale ao saldo de hoje
         // (não há nada lançado entre hoje e o fim do mês); mês passado → como o saldo estava lá.
