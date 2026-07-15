@@ -37,6 +37,7 @@ export interface TransactionDto {
   installmentGroupId?: string | null;
   installmentNumber?: number | null; // 1..N — qual parcela
   installmentCount?: number | null; // N — total de parcelas
+  isCarryForward?: boolean; // entrada virtual de saldo do mês anterior (não editável)
 }
 
 export interface MonthCommitmentDto {
