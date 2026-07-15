@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Plus } from "lucide-react";
+import { ArrowLeftRight, Plus } from "lucide-react";
 import { useDashboard } from "./lib/hooks";
 import type { TransactionDto } from "./lib/types";
 import BalanceCard from "./components/BalanceCard";
@@ -8,6 +8,7 @@ import CommitmentsCard from "./components/CommitmentsCard";
 import MonthSelector, { thisMonth, type RefMonth } from "./components/MonthSelector";
 import TransactionList from "./components/TransactionList";
 import TransactionForm from "./components/TransactionForm";
+import TransferForm from "./components/TransferForm";
 import CategoriesScreen from "./components/CategoriesScreen";
 import AccountsScreen from "./components/AccountsScreen";
 import ChatScreen from "./components/ChatScreen";
@@ -17,6 +18,7 @@ import BottomNav, { type Tab } from "./components/BottomNav";
 export default function App() {
   const [tab, setTab] = useState<Tab>("home");
   const [form, setForm] = useState<{ editing: TransactionDto | null } | null>(null);
+  const [transferOpen, setTransferOpen] = useState(false);
   const [refMonth, setRefMonth] = useState<RefMonth>(thisMonth());
   const dashboard = useDashboard(refMonth.year, refMonth.month);
 
@@ -59,15 +61,25 @@ export default function App() {
       {tab === "accounts" && <AccountsScreen />}
 
       {showFab && (
-        <button
-          onClick={openAdd}
-          className="fixed bottom-20 left-1/2 z-10 flex -translate-x-1/2 items-center gap-2 rounded-full bg-emerald-500 px-6 py-3 font-semibold text-slate-900 shadow-lg shadow-emerald-500/30 active:scale-95"
-        >
-          <Plus size={20} /> Nova transação
-        </button>
+        <div className="fixed bottom-20 left-1/2 z-10 flex -translate-x-1/2 items-center gap-3">
+          <button
+            onClick={openAdd}
+            className="flex items-center gap-2 rounded-full bg-emerald-500 px-5 py-3 font-semibold text-slate-900 shadow-lg shadow-emerald-500/30 active:scale-95"
+          >
+            <Plus size={20} /> Nova transação
+          </button>
+          <button
+            onClick={() => setTransferOpen(true)}
+            aria-label="Nova transferência"
+            className="flex items-center gap-2 rounded-full bg-sky-500 px-4 py-3 font-semibold text-slate-900 shadow-lg shadow-sky-500/30 active:scale-95"
+          >
+            <ArrowLeftRight size={18} />
+          </button>
+        </div>
       )}
 
       {form && <TransactionForm editing={form.editing} onClose={() => setForm(null)} />}
+      {transferOpen && <TransferForm onClose={() => setTransferOpen(false)} />}
 
       <BottomNav tab={tab} onChange={setTab} />
     </div>
